@@ -1,4 +1,5 @@
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.Library;
 using System.Collections.Generic;
 
 namespace NordInvasion.Managers

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
 using System.Linq;
@@ -8,12 +9,21 @@ namespace NordInvasion.Managers
     // Mechanic 2: Modular Fort + 14 Destructible
     public class FortressBuildManager : MissionBehavior
     {
-        public enum BuildType { Foundation, Wall, Door, Stakes, OilCauldron, Brazier, SpikeTrap, ShieldWall }
+        // Foundation/Wall - базовые, остальное открывают чертежи из магазина (Mechanic 2/18/23)
+        public enum BuildType
+        {
+            Foundation, Wall, Door, Stakes, OilCauldron, Brazier, SpikeTrap, ShieldWall,
+            Ballista, Catapult, RockTrap, LogTrap, OilDitch
+        }
 
         // Максимум построек на забег (ограничение на кол-во сущностей)
         public const int MaxBuildings = 40;
         public int BuiltCount = 0;
         private Agent _builder;
+        private readonly List<GameEntity> _placed = new List<GameEntity>();
+
+        /// <summary>Постройки, поставленные в этом забеге (для ремонта и статистики).</summary>
+        public IReadOnlyList<GameEntity> Placed => _placed;
 
         public bool TryPlace(BuildType type, Agent builder)
         {
@@ -24,6 +34,16 @@ namespace NordInvasion.Managers
             if (BuiltCount >= MaxBuildings)
             {
                 InformationManager.DisplayMessage(new InformationMessage("Fort limit reached! Destroy some barricades first", Colors.Red));
+                return false;
+            }
+
+            // Механика 2: продвинутые постройки открываются чертежами (покупка в магазине -> бэкенд)
+            var needBlueprint = Models.ShopCatalog.BlueprintFor(type);
+            if (!string.IsNullOrEmpty(needBlueprint)
+                && (goldComp.Blueprints == null || !goldComp.Blueprints.Contains(needBlueprint)))
+            {
+                InformationManager.DisplayMessage(new InformationMessage(
+                    $"Blueprint '{needBlueprint}' required! Buy it in the shop (N)", Colors.Red));
                 return false;
             }
 
@@ -59,9 +79,36 @@ namespace NordInvasion.Managers
                     Place("ni_brazier", Machines.PropSpawner.FallbackTorch, pos, yaw, new Machines.BrazierUsable());
                     break;
                 case BuildType.ShieldWall:
-                    if (goldComp.Wood < 6) { InformationManager.DisplayMessage(new InformationMessage("Need 6 wood for shield wall!", Colors.Red)); return false; }
-                    goldComp.Wood -= 6;
+                    if (!Spend(goldComp, 6, 0, "Need 6 wood for shield wall!")) return false;
                     Place("ni_shield_wall", Machines.PropSpawner.FallbackWall, pos, yaw, new Machines.BarricadeDestructible());
+                    break;
+                case BuildType.SpikeTrap:
+                    if (!Spend(goldComp, 2, 0, "Need 2 wood for spike trap!")) return false;
+                    Place("ni_spike_trap", Machines.PropSpawner.FallbackFence, pos, yaw, new Machines.StakesTrap());
+                    break;
+
+                // Механика 18: осадные орудия игроками (чертежи из магазина)
+                case BuildType.Ballista:
+                    if (!Spend(goldComp, 8, 6, "Need 8 wood + 6 metal for ballista!")) return false;
+                    Place("ni_ballista", Machines.PropSpawner.FallbackWood, pos, yaw, new Machines.BallistaUsable());
+                    break;
+                case BuildType.Catapult:
+                    if (!Spend(goldComp, 12, 10, "Need 12 wood + 10 metal for catapult!")) return false;
+                    Place("ni_catapult", Machines.PropSpawner.FallbackWood, pos, yaw, new Machines.CatapultUsable());
+                    break;
+
+                // Механика 23: ловушки окружения
+                case BuildType.RockTrap:
+                    if (!Spend(goldComp, 3, 4, "Need 3 wood + 4 metal for rock trap!")) return false;
+                    Place("ni_rock_trap", Machines.PropSpawner.FallbackBarrel, pos, yaw, new Machines.RockTrapUsable());
+                    break;
+                case BuildType.LogTrap:
+                    if (!Spend(goldComp, 6, 0, "Need 6 wood for log trap!")) return false;
+                    Place("ni_log_trap", Machines.PropSpawner.FallbackWood, pos, yaw, new Machines.LogTrapUsable());
+                    break;
+                case BuildType.OilDitch:
+                    if (!Spend(goldComp, 4, 5, "Need 4 wood + 5 metal for oil ditch!")) return false;
+                    Place("ni_oil_ditch", Machines.PropSpawner.FallbackBarrel, pos, yaw, new Machines.OilDitchUsable());
                     break;
             }
             return true;
@@ -106,6 +153,7 @@ namespace NordInvasion.Managers
                 entity.AddComponent(component);
 
             BuiltCount++;
+            _placed.Add(entity);
             InformationManager.DisplayMessage(new InformationMessage($"Placed {entity.Name}! Engineer can repair with hammer", Colors.Green));
 
             // ранг Master Engineer: 100 построек (бэкенд считает)
@@ -126,6 +174,47 @@ namespace NordInvasion.Managers
 
             destructible.SetHitPoints(destructible.HitPoints + repairAmount);
             InformationManager.DisplayMessage(new InformationMessage($"Repaired {propEntity.Name} +{repairAmount} HP", Colors.Cyan));
+        }
+
+        /// <summary>
+        /// Ремонт ближайшей постройки (магазин: "Repair Kit", перки инженера, ability медика-инженера).
+        /// Возвращает false, если ставить/чинить нечего.
+        /// </summary>
+        public bool RepairNearest(Agent agent, int hitPoints, float radius = 25f)
+        {
+            var target = FindNearestStructure(agent.Position, radius);
+            if (target == null)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("No barricade in range to repair", Colors.Yellow));
+                return false;
+            }
+            var destructible = target.GetFirstScriptOfType<DestructibleComponent>();
+            if (destructible == null) return false;
+
+            destructible.SetHitPoints(System.Math.Min(destructible.HitPoints + hitPoints, destructible.MaxHitPoints));
+            InformationManager.DisplayMessage(new InformationMessage($"Repaired {target.Name} +{hitPoints} HP", Colors.Cyan));
+            return true;
+        }
+
+        /// <summary>Ближайшая постройка форта из поставленных в этом забеге.</summary>
+        public GameEntity FindNearestStructure(Vec3 from, float radius = 25f)
+        {
+            GameEntity best = null;
+            float bestDist = radius * radius;
+            for (int i = _placed.Count - 1; i >= 0; i--)
+            {
+                var e = _placed[i];
+                if (e == null) { _placed.RemoveAt(i); continue; }
+                float d2;
+                try
+                {
+                    var delta = e.GlobalPosition - from;
+                    d2 = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
+                }
+                catch { _placed.RemoveAt(i); continue; }   // сущность уже удалена из мира
+                if (d2 < bestDist) { bestDist = d2; best = e; }
+            }
+            return best;
         }
 
         /// <summary>Директор: relief-ящик с боеприпасами при низком стрессе.</summary>

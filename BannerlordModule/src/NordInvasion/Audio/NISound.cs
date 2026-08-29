@@ -56,11 +56,25 @@ namespace NordInvasion.Audio
         {
             try
             {
-                var asm = typeof(TaleWorlds.Core.Agent).Assembly; // TaleWorlds.Core.dll
-                _soundControllerType = asm.GetType("TaleWorlds.Core.SoundController");
-                _soundEventType = asm.GetType("TaleWorlds.Engine.SoundEvent")
-                    ?? asm.GetType("TaleWorlds.Library.SoundEvent")
-                    ?? Type.GetType("TaleWorlds.Engine.SoundEvent, TaleWorlds.Engine");
+                // Имена типов/сборок менялись между патчами игры, поэтому собираем кандидатов
+                // из всех TaleWorlds-сборок: не найден метод = звук молчит, но игра жива.
+                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    string an;
+                    try { an = asm.GetName().Name; }
+                    catch { continue; }
+                    if (an != "TaleWorlds.Core" && an != "TaleWorlds.Engine" && an != "TaleWorlds.MountAndBlade")
+                        continue;
+
+                    if (_soundControllerType == null)
+                        _soundControllerType = asm.GetType("TaleWorlds.Core.SoundController")
+                            ?? asm.GetType("TaleWorlds.Engine.SoundController");
+                    if (_soundEventType == null)
+                        _soundEventType = asm.GetType("TaleWorlds.Engine.Sounds.SoundEvent")
+                            ?? asm.GetType("TaleWorlds.Engine.SoundEvent")
+                            ?? asm.GetType("TaleWorlds.Core.SoundEvent");
+                    if (_soundControllerType != null && _soundEventType != null) break;
+                }
                 if (_soundControllerType != null)
                 {
                     _play2d = FindMethod(_soundControllerType, "PlaySound");

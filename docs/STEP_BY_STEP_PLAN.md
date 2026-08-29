@@ -349,7 +349,7 @@
 
 ### День 28: Релиз
 
-1. Собери релиз: `NordInvasion v2.0.0 - 29 mechanics` zip с `Modules/NordInvasion/`
+1. Собери релиз: `NordInvasion v2.1.0 - 29 mechanics` zip с `Modules/NordInvasion/`
 
 2. Напиши README с инструкцией
 

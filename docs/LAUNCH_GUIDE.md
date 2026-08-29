@@ -149,12 +149,20 @@ php /var/www/nordinv/install.php
 
 # 5. nginx-сайт (пример в src/backend-php/README.md) + reload
 
-# 6. Smoke-тест (должно быть "18 ok, 0 fail")
+# 6. Smoke-тест (должно быть "29 ok, 0 fail": профиль, награды, магазин,
+#    battlepass-claim, голоса кампании, сброс сезона)
 bash /var/www/nordinv/tests/smoke.sh http://nordinv.example.com <API_SECRET>
+
+# 7. (опция) контрактный тест против этого же PHP: 64-66 проверок, идемпотентность
+python3 tools/test_backend_api.py --base http://nordinv.example.com --secret <API_SECRET>
 ```
 
-> Dev-режим без MySQL: в `config.php` `DB_DRIVER = "sqlite"`,
-> `php -S 0.0.0.0:8080 -t src/backend-php`.
+> Dev-режим без MySQL: в `config.php` `DB_DRIVER = "sqlite"`, затем
+> `php -S 0.0.0.0:8080 -t src/backend-php src/backend-php/router.php`
+> (роутер обязателен: без него `php -S` отдаёт 404 на `/api/*`, т.к. ищет файл, а не фронтовик).
+> Совсем без PHP: `python3 src/backend/dev_server.py --port 8080 --reset` —
+> тот же контракт на stdlib+sqlite (ядро `src/backend/nidb.py`), удобно для
+> локальной проверки магазина/балансов.
 
 ### Настройка в моде:
 
@@ -219,9 +227,17 @@ python3 tools/prepare_scenes.py --source mp_ye_battle_01
 
 ### Тестирование:
 
+Полный пошаговый прогон (с ожидаемыми строками вывода и разбором отказов) -
+**`docs/VERIFICATION.md`**. Короткий список для быстрого запуска:
+
 - 1 игрок: Custom Battle 1 волна 10 ботов - работает?
 - Роли: умри -> Fallen -> медик поднимает?
-- Форт: B -> Foundation 5 wood -> Wall?
+- Форт: меню стройки (B) **пока не подключено** - `NI_BuildMenu_VM` существует, но
+  экранов мода UIExtender не поднимает; строить можно проверочным поведением из
+  `docs/VERIFICATION.md` (шаг 5.0). Проверяется так: чертёж куплен -> `TryPlace`
+  ставит постройку, без чертежа -> сообщение про чертёж
+- Оружейная: F на ящике у спавна -> аптечка/снаряды/ремонт (покупка уходит на бэкенд)
+- Перки: волна 3 -> три жаровни, F = выбор, 15 сек бездействия = случайный
 - Кавалерия: волна 10 -> колья убивают лошадь?
 - Лут: убей босса -> мешок -> донеси до казны?
 - Last Stand: 1 живой vs 1 норд -> слоу-мо?

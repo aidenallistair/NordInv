@@ -79,6 +79,12 @@
 | GET | `/api/season/current` | — | текущий сезон |
 | GET | `/api/leaderboard` | — | топ-20 по season_points |
 | GET | `/api/battlepass/rewards` | — | награды battlepass |
+| GET | `/api/shop/catalog` | — | каталог + баланс игрока (`player_id`/`steam_id` опц.) |
+| POST | `/api/shop/buy` | player_id/steam_id/name, item_id, qty (1-5) | покупка по цене сервера; `grants` (wood/metal/gold/blueprint/title/skin/heal/ammo/repair) начисляются сразу; журнал `shop_purchases` |
+| GET | `/api/shop/history` | player_id | последние покупки |
+| GET | `/api/battlepass/progress` | player_id | level/points/claimed/next_level/rewards |
+| POST | `/api/battlepass/claim` | player_id, level | выдать награду уровня (повтор -> 409) |
+| POST | `/api/season/reset` | — (+заголовок `X-NI-Admin: ADMIN_SECRET`) | закрыть сезон: архив, новый `seasons`, обнуление season_points/battlepass_level/meta |
 | GET | `/health` | — | `{"ok":true,"db":"mysql"}` |
 
 ## Установка
@@ -125,7 +131,10 @@ PersistenceManager.ApiSecret  = "тот-же-секрет-что-в-config.php";
 | Конец забега | победа/`Defeat` в WaveManager | POST /api/run/save |
 | Реанимация медика | `MedicComponent.OnTickAsAI` | POST /api/stat/increment (revives) |
 | Построение | `FortressBuildManager.Place` | POST /api/stat/increment (builds) |
-| Победа в кампании | `PersistenceManager.OnCampaignWin` | POST /api/campaign/battle |
+| Победа в кампании | `PersistenceManager.OnCampaignWin` | POST /api/campaign/battle (+`village_id` из голосования, `won` по фактической волне) |
+| Покупка в магазине / ящике | `PersistenceManager.BuyShopItem` (UI `NI_Shop_VM`, `NI_ArmoryUsable`) | POST /api/shop/buy -> ApplyGrants (балансы, чертежи, сервисы) |
+| Прогресс battlepass | `PersistenceManager.RefreshBattlepass` (после login) | GET /api/battlepass/progress |
+| Claim награды BP | `NI_Shop_VM.ExecuteClaimBattlepass` | POST /api/battlepass/claim |
 
 Все HTTP-вызовы — `Task.Run` (не блокируют тик миссии), таймаут 10 c,
 ошибки логируются в Debug и не роняют игру: без бэкенда мод работает как раньше
@@ -141,11 +150,57 @@ php src/backend-php/install.php   # в config.php: DB_DRIVER='sqlite'
 bash src/backend-php/tests/smoke.sh http://localhost:8080
 ```
 
+## Каталог экономики = `shop_catalog.json`
+
+Единственный источник правды для цен и наград: `src/backend-php/shop_catalog.json`.
+
+| Ключ | Кто читает | Зачем |
+|------|-----------|-------|
+| `items[]` (`id,name,type,gold,wood,metal,grants,desc`) | PHP `config.php`, Python `nidb.load_catalog`, `tools/*` | цена и выдача на сервере (клиенту верить нельзя) |
+| `blueprints[]`, `bp_*`, `new_player_gold` | там же | allowlist чертежей, шаги battlepass, стартовый баланс |
+| `battlepass[]` | `install.php` (сид) + `battlepass/progress` | таблица наград |
+
+C# держит встроенный `Models/ShopCatalog.cs` как fallback (без него магазин пуст в
+офлайн-режиме). Расхождение C# ↔ JSON ловят `tools/lint_csharp.py` (сверка
+`ShopItem`-строк) и `tools/validate_module.py` (шаг «shop_catalog.json
+самосогласован»): правки в JSON без правки C# не пройдут валидацию.
+
+## Проверка бэкенда без MySQL и без игры
+
+```bash
+# контракт одного и того же API на dev-бэкенде (stdlib, sqlite)
+python3 tools/test_backend_api.py                      # in-process, 66 проверок
+python3 src/backend/dev_server.py --port 8080 --reset & # HTTP-сервер для smoke
+bash src/backend-php/tests/smoke.sh http://127.0.0.1:8080   # 29 проверок curl'ом
+python3 tools/test_backend_api.py --base http://127.0.0.1:8080 --admin-key test-admin-key
+
+# SQL+схема PHP (49 запросов на sqlite, 37 пар prepare/execute по числу «?»)
+python3 tools/test_backend_sql.py
+```
+
+`--base`/smoke.sh работают и против боевого PHP: после
+`php src/backend-php/install.php` поднять `php -S 0.0.0.0:8080 -t src/backend-php
+src/backend-php/router.php` (роутер обязателен - иначе `/api/*` = 404).
+
+## Сброс сезона (между сезонами, вручную)
+
+```bash
+curl -s -X POST -H "X-NI-Admin: ADMIN_SECRET_из_config.php" http://host/api/season/reset
+```
+
+Голоса кампании привязаны к `season_id`, поэтому после сброса выборка деревень чистая;
+золото, уровень, титулы и чертежи игроков не трогаются. Без `ADMIN_SECRET` в `config.php`
+endpoint отвечает 503 — случайный запрос ничего не сотрёт.
+
 ## Ограничения / следующие шаги
 
-- Боевой магазин (покупка чертежей за золото в UI) — `NI_Shop_VM` уже читает
-  `PlayerGoldComponent`; подключение к `UnlockBlueprint` — следующий шаг.
-- Battlepass-выдача (reward claim) — таблица есть, endpoint выдачи не написан.
-- Сброс сезона (скрипт: обнулить season_points, обнулить campaign_votes за сезон).
+- ~~Боевой магазин → UnlockBlueprint~~ — сделано (session 4): сервер считает цену и
+  баланс, `grants` применяет сервер, клиент только отображает.
+- ~~Battlepass claim~~ — сделано: `season_points_earned` (траты не откатывают уровень),
+  `battlepass_claims` с UNIQUE на уровень+сезон.
+- ~~Сброс сезона~~ — сделано: `POST /api/season/reset` под `X-NI-Admin`.
 - HTTPS обязательно в проде (секрет в заголовке).
 - Бэкап: `mysqldump nordinv` раз в день (cron) — база маленькая (<10 МБ при сотнях игроков).
+- `POST /api/season/reset` не имеет rate-limit/ауда — логировать в cron-вызове самому.
+- Клиентская часть магазина — VM + пропсы (`NI_ArmoryUsable`); полноценный Gauntlet-экран
+  всё ещё ждёт подключения пайплайна (docs/AUDIT.md).

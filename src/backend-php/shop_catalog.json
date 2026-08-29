@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "comment": "Канонический каталог магазина и сезонных констант Nord Invasion. Читается PHP-бэкендом (config.php), Python dev-бэкендом (src/backend/nidb.py) и сверяется tools/validate_module.py с встроенной таблицей C# (Models/ShopCatalog.cs). Правь здесь - валидатор поймает расхождение.",
+
+  "new_player_gold": 500,
+  "bp_points_per_level": 25,
+  "bp_max_level": 20,
+
+  "blueprint_ids": [
+    "wall_wood", "wall_door", "oil_cauldron", "ballista", "catapult",
+    "stakes", "brazier", "shield_wall", "rock_trap", "oil_ditch",
+    "log_trap", "spike_trap"
+  ],
+
+  "items": [
+    {
+      "id": "wood_pack_10", "name": "Wood Pack x10", "type": "resource",
+      "gold": 60, "wood": 0, "metal": 0,
+      "grants": ["wood:10"], "desc": "10 wood for the fort"
+    },
+    {
+      "id": "metal_pack_5", "name": "Scrap Metal Pack x5", "type": "resource",
+      "gold": 80, "wood": 0, "metal": 0,
+      "grants": ["metal:5"], "desc": "5 scrap metal for doors and machines"
+    },
+    {
+      "id": "supply_pack", "name": "Supply Wagon Pack", "type": "resource",
+      "gold": 120, "wood": 0, "metal": 0,
+      "grants": ["wood:10", "metal:5"], "desc": "10 wood + 5 metal (caravan price)"
+    },
+    {
+      "id": "heal_kit", "name": "Field Dressing", "type": "service",
+      "gold": 40, "wood": 0, "metal": 0,
+      "grants": ["heal:40"], "desc": "Restore 40 HP instantly"
+    },
+    {
+      "id": "ammo_crate", "name": "Ammo Crate", "type": "service",
+      "gold": 50, "wood": 0, "metal": 0,
+      "grants": ["ammo"], "desc": "Spawn an ammo box at your feet"
+    },
+    {
+      "id": "repair_kit", "name": "Repair Kit", "type": "service",
+      "gold": 35, "wood": 0, "metal": 0,
+      "grants": ["repair:60"], "desc": "+60 HP to the nearest barricade"
+    },
+    {
+      "id": "wall_door", "name": "Blueprint: Gate Door", "type": "blueprint",
+      "gold": 150, "wood": 0, "metal": 0,
+      "grants": ["blueprint:wall_door"], "desc": "Unlocks Door in the build menu"
+    },
+    {
+      "id": "brazier", "name": "Blueprint: Brazier", "type": "blueprint",
+      "gold": 90, "wood": 0, "metal": 0,
+      "grants": ["blueprint:brazier"], "desc": "Light the fort on night waves"
+    },
+    {
+      "id": "stakes", "name": "Blueprint: Sharpened Stakes", "type": "blueprint",
+      "gold": 120, "wood": 20, "metal": 0,
+      "grants": ["blueprint:stakes"], "desc": "Anti-cavalry stakes (wave 10+)"
+    },
+    {
+      "id": "spike_trap", "name": "Blueprint: Spike Trap", "type": "blueprint",
+      "gold": 100, "wood": 10, "metal": 0,
+      "grants": ["blueprint:spike_trap"], "desc": "Cheap 200 HP trap, breaks cavalry charges"
+    },
+    {
+      "id": "oil_cauldron", "name": "Blueprint: Oil Cauldron", "type": "blueprint",
+      "gold": 200, "wood": 20, "metal": 5,
+      "grants": ["blueprint:oil_cauldron"], "desc": "Boiling oil over the wall"
+    },
+    {
+      "id": "shield_wall", "name": "Blueprint: Shield Wall", "type": "blueprint",
+      "gold": 180, "wood": 30, "metal": 0,
+      "grants": ["blueprint:shield_wall"], "desc": "1200 HP reusable wall segment"
+    },
+    {
+      "id": "ballista", "name": "Blueprint: Ballista", "type": "blueprint",
+      "gold": 250, "wood": 10, "metal": 8,
+      "grants": ["blueprint:ballista"], "desc": "Siege ballista, pierces 3 nords"
+    },
+    {
+      "id": "catapult", "name": "Blueprint: Catapult", "type": "blueprint",
+      "gold": 300, "wood": 15, "metal": 12,
+      "grants": ["blueprint:catapult"], "desc": "AOE stone thrower"
+    },
+    {
+      "id": "rock_trap", "name": "Blueprint: Rock Trap", "type": "blueprint",
+      "gold": 150, "wood": 0, "metal": 4,
+      "grants": ["blueprint:rock_trap"], "desc": "One-shot crush trap on a path"
+    },
+    {
+      "id": "log_trap", "name": "Blueprint: Log Trap", "type": "blueprint",
+      "gold": 150, "wood": 12, "metal": 0,
+      "grants": ["blueprint:log_trap"], "desc": "Rolling log down the approach"
+    },
+    {
+      "id": "oil_ditch", "name": "Blueprint: Oil Ditch", "type": "blueprint",
+      "gold": 200, "wood": 0, "metal": 10,
+      "grants": ["blueprint:oil_ditch"], "desc": "Spill oil, ignite with a torch"
+    }
+  ],
+
+  "battlepass": [
+    { "level": 1,  "type": "gold",     "id": "100",          "name": "100 Gold" },
+    { "level": 2,  "type": "blueprint","id": "wall_wood",    "name": "Wooden Wall Blueprint" },
+    { "level": 3,  "type": "title",    "id": "defender",     "name": "Title: Defender" },
+    { "level": 5,  "type": "blueprint","id": "oil_cauldron", "name": "Oil Cauldron Blueprint" },
+    { "level": 8,  "type": "season_points", "id": "50",      "name": "50 Season Points" },
+    { "level": 10, "type": "skin",     "id": "jarl_helmet",  "name": "Jarl Helmet Skin" },
+    { "level": 15, "type": "gold",     "id": "1000",         "name": "1000 Gold" },
+    { "level": 20, "type": "title",    "id": "nord_slayer",  "name": "Title: Nord Slayer" }
+  ]
+}

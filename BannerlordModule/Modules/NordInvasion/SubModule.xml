@@ -1,7 +1,7 @@
 <Module>
     <Name value="Nord Invasion Better Edition"/>
     <Id value="NordInvasion"/>
-    <Version value="v2.0.0"/>
+    <Version value="v2.1.0"/>
     <SingleplayerModule value="true"/>
     <MultiplayerModule value="true"/>
     <DependedModules>

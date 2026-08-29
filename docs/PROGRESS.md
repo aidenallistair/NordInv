@@ -84,15 +84,20 @@
 - [x] **tools/validate_module.py** (session 2): валидация XML, SubModule-регистрации,
       сцен, troop/item/prop ID (проходит: 0 ошибок)
 - [x] **Release zip** (session 2): `tools/make_release.py` ->
-      `dist/NiNordInvasion_v2_0_0_source.zip` (source-релиз, dll собирается локально)
+      `dist/NiNordInvasion_v2_1_0_source.zip` (source-релиз, dll собирается локально)
 - [x] **Исправления session 2**: SubModule.xml регистрировал только 2 XML из 6
       ( Characters/Items/Missions/SceneProps не грузились); MathF (нет в net472);
       небезопасные API (Peer.Communicator, SetActionChannel, rotation.f, SetTeam);
       csproj: System.Net.Http; killcam double-call; экономика строительства
+- [ ] **UIExtender + подключение экранов** (главный функциональный гейт после session 4):
+      без него `NI_Shop_VM`/`NI_BuildMenu_VM`/`NI_PerkChoice_VM`/`NI_CampaignMap_VM`
+      не выведены на экран, т.е. стройка форта (механики 2/18/23) игроку недоступна.
+      Порядок и проверочный debug-хук - docs/VERIFICATION.md, шаг 5.0
 - [ ] Бинарный террейн сцен (terrain.bin) - `prepare_scenes.py` на машине с игрой
       или сохранение в Scene Editor (5 минут на сцену)
-- [ ] Иконки перков - mesh + material (docs/ART_TASKS.md, UI готов)
-- [ ] Мешы ni_*-пропсов (docs/ART_TASKS.md; пока vanilla-fallback)
+- [ ] Иконки перков - mesh + material (docs/ART_TASKS.md; VM/слоты готовы, session 4)
+- [ ] Мешы ni_*-пропсов (docs/ART_TASKS.md; vanilla-fallback, session 4 добавил
+      фоллбеки для осадных/ловушек и ящика оружейной; тотемы перков используют ni_brazier)
 - [ ] Тест Dedicated Server 2 клиента (нужен SteamCMD/Windows)
 - [ ] Загрузка на NexusMods (нужен аккаунт + dll)
 
@@ -108,7 +113,7 @@
    террейн-заполнение на машине с игрой (prepare_scenes.py).
 4. Инфраструктура: validate_module.py, make_release.py, prepare_scenes.py,
    gen_ni_scenes.py. Валидация: 0 ошибок.
-5. Release: dist/NiNordInvasion_v2_0_0_source.zip.
+5. Release: dist/NiNordInvasion_v2_1_0_source.zip (session 4: каталог магазина/чертежи/BP в `src/backend-php/shop_catalog.json`).
 
 **Следующий шаг для человека (нужна Windows + Bannerlord):**
 1. `python3 tools/prepare_scenes.py` (террейн)
@@ -164,3 +169,110 @@ PHP-рантайма в песочнице нет — на хосте: `bash tes
 **Осталось (человеку):** MySQL+PHP на dedicated-хосте (гайд в README),
 прописать URL/секрет в моде, smoke-тест, после — shop UI -> UnlockBlueprint,
 battlepass claim, сброс сезона.
+
+## Session 4 (2026-08-29): экономика магазина, BattlePass, сброс сезона + проверка без игры
+
+Задание: «продолжить по актуальному плану» = пункты `docs/BACKEND_PHP.md →
+Ограничения/следующие шаги` и `docs/PROGRESS.md → Осталось`: *shop UI → UnlockBlueprint*,
+*battlepass claim*, *сброс сезона* + снятие риска «мод никогда не компилировался»
+статикой, которая возможна без установки игры.
+
+**Сделано по пунктам:**
+
+1. **Единый каталог экономики:** `src/backend-php/shop_catalog.json` (17 позиций, цены,
+   `grants`, allowlist чертежей, таблица battlepass, `bp_points_per_level`, стартовое
+   золото). Читают: PHP (`config.php`), Python (`nidb.load_catalog`), C# держит
+   встроенный fallback (`Models/ShopCatalog.cs`) - `validate_module.py` сверяет все три,
+   расхождение цен/grants = ошибка валидации.
+2. **Магазин (план: «shop UI -> UnlockBlueprint»):**
+   - PHP: `GET /api/shop/catalog`, `POST /api/shop/buy` (цену и баланс проверяет сервер,
+     журнал `shop_purchases`, повторная покупка чертежа -> 409, награды валидируются
+     ДО списания), `GET /api/shop/history`.
+   - C#: `NI_Shop_VM` -> `PersistenceManager.BuyShopItem()` (авторитетно серверу),
+     `ApplyGrants()` применяет `wood/metal/gold/blueprint/title/skin/heal/ammo/repair`,
+     `shop/history`, страницы каталога, `ExecuteReload`. Без бэкенда - `BuyLocal`
+     (мод играбелен без MySQL, просто не сохраняется).
+   - `FortressBuildManager`: чертежи **реально гейтят** постройки (Door, Stakes, SpikeTrap,
+     OilCauldron, Brazier, ShieldWall, Ballista, Catapult, RockTrap, LogTrap, OilDitch);
+     туда же добавлены сами постройки механик 18/23 - классы машин были, но ставить
+     их было нечем. Экономика приведена к `Spend()` (личные ресурсы -> склад).
+3. **BattlePass (план: «battlepass claim»):** колонка `season_points_earned`
+   (прогресс не откатывается тратами), таблица `battlepass_claims`
+   (UNIQUE player_id+level+season), `GET /api/battlepass/progress`,
+   `POST /api/battlepass/claim` (проверка уровня, 409 на повтор, награды через
+   `apply_grants`). `battlepass_level` пересчитывается при каждом начислении.
+   C#: `RefreshBattlepass()`, `ClaimBattlepass()`, `NextClaimableLevel()`,
+   кнопка `ExecuteClaimBattlepass` + строка BP в шапке магазина.
+4. **Сброс сезона (план: «сброс сезона»):** `POST /api/season/reset` под `X-NI-Admin`
+   (`ADMIN_SECRET`; не задан -> 503, чтобы нельзя было стереть сезон случайным запросом):
+   архив в `season_history`, новый `seasons`, обнуление `season_points`,
+   `season_points_earned`, `battlepass_level`, `meta`; золото/уровень/титулы/чертежи
+   сохраняются, голоса остаются в старом сезоне. Идемпотентная миграция существующих
+   баз - `install.php::migrate()` (добавляет недостающие колонки players).
+5. **Dev-бэкенд приведён к контракту (реальный баг, а не косметика):** старый
+   `src/backend/main.py` читал `players` по неверным индексам колонок (level/xp/wood
+   путались), принимал только JSON-тело (мод шлёт form -> 422), не имел 7 из 16
+   маршрутов (wave/complete, perk/record, run/save, stat/increment, meta/unlock,
+   campaign/vote, health). Теперь ядро - `src/backend/nidb.py` (stdlib + sqlite),
+   два входа на одном ядре: `dev_server.py` (без зависимостей вообще) и
+   `main.py` (тонкая FastAPI-обёртка). Оба проходят один и тот же тест.
+6. **Инструменты проверки (то, что проверяемо без игры):**
+   - `tools/test_backend_api.py` - 66 проверок контракта (награды, идемпотентность
+     перков/покупок/голосов/claim'ов, whitelist, коды 400/401/403/404/409/503, сброс
+     сезона). Режимы: in-process, `--serve` (через HTTP), `--base URL` (против PHP на
+     хосте). Результат сейчас: **66 ok / 0 fail** в обоих режимах.
+   - `tools/test_backend_sql.py` - 49 SQL-запросов PHP поднимаются на схеме sqlite,
+     37 пар `prepare/execute` сходятся по числу `?`, `schema.sql` + `install.php::ddl()`
+     согласованы, маршруты полны. Результат: **0 ошибок**.
+   - `tools/lint_csharp.py` - C# без компилятора: баланс скобок через токенайзер
+     (строки/комментарии вырезаются, а не `count()`), обязательные `using` по типам,
+     `override` против списка виртуалов, контракт `"/api/..."` C# <-> PHP <-> Python,
+     сверка каталога, регистрация всех `MissionBehavior` в `SubModule.cs`.
+     Результат: **0 ошибок, 1 предупреждение** (см. «Риски» ниже).
+   - `tools/validate_module.py` вызывает оба анализатора + проверяет сам каталог:
+     один запуск перед релизом. Итог: **0 ошибок, 12 предупреждений** (все - бинарка,
+     требующая установленную игру).
+7. **Найденные и исправленные баги:**
+   - **`PerkManager` не был зарегистрирован** в `SubModule.cs` -> `GetMissionBehavior<PerkManager>()`
+     = null, т.е. выбор перков не запускался вообще (механика 1, флагманская).
+   - `Audio/NISound.cs`: `typeof(TaleWorlds.Core.Agent)` - `Agent` находится в
+     `TaleWorlds.MountAndBlade` (CS0234: не компилируется). Резолв SoundController
+     переписан на поиск по сборкам домена.
+   - 3 файла без обязательных `using`: `Machines/PropSpawner.cs` (Vec3/Frame),
+     `Components/RoleComponents.cs` (GameEntity/DestructibleComponent),
+     `Managers/MetaProgressionManager.cs` (InformationManager/Colors) - CS0246.
+   - `InformationManager.DisplayMessage` вызывался прямо из `Task.Run` (bg-поток).
+     Добавлена очередь `_uiQueue` + разбор в `OnMissionTick`.
+   - `OnCampaignWin` всегда слал `village_id=0, won=1` -> теперь деревня берётся из
+     голосования сезона, `won` - по фактической волне.
+   - `smoke.sh`: было 18 проверок; +11 (магазин/повторная покупка/battlepass/сброс
+     сезона/недостаточно ресурсов) = 29, проходят против dev-бэкенда.
+8. **«Физический UI» там, где Gauntlet ещё не подключён:** выбор перка и покупки
+   теперь доступны в бою без экрана - `Machines/InteractionMachines.cs`:
+   `NI_ArmoryUsable` (ящик у спавна: аптечка/снаряды/ремкомплект через `/api/shop/buy`)
+   и `NI_PerkTotemUsable` (PerkManager спавнит 3 тотема, F = взять перк, тайм-аут
+   15 сек = случайный, после выбора тотемы гаснут). Механика 1 перестаёт быть
+   «сообщением в чат».
+9. **Версия 2.0.0 -> 2.1.0**, `RELEASE_NOTES.md` и релиз-зип пересобраны.
+
+**Риски, которые остались (честно):**
+- `AgentComponent.OnTickAsAI(float)` используется в 4 компонентах (медик, знамёнщик,
+  стихии, ранения) - в справочнике 1.0.3 такого виртуала нет; если в 1.2.x его тоже
+  нет, это «мёртвый» код, и линтер это показывает единственным предупреждением.
+  Проверить по DLL при первой компиляции (или заменить на `OnTick`).
+- Публичные API (`SetHitPoints`, `SetMaximumHitPoints`, `SpawnMissile`, `AddExplosion`,
+  `LoadSceneProp`, `Formation.Captain`) по-прежнему проверяются только сборкой.
+- Gauntlet-префабы NI_* не подключены к пайплайну экранов: VM'ы и каталог готовы,
+  синтаксис `Command.*` в XML надо сверить с нативным префабом в игре.
+
+**Найдено при подготовке инструкции по проверкам** (`docs/VERIFICATION.md`): UIExtender в
+проекте нет ни одного, поэтому VM'ы не выведены на экраны и **стройка форта (механики
+2/18/23) игроку недоступна** - `TryPlace` дёргается только из `NI_BuildMenu_VM`.
+Магазин частично закрыт F-ящиком, перки - F-тотемами; остальное требует либо
+UIExtender-миксинов, либо проверочного поведения (шаг 5.0 инструкции).
+
+**Следующий шаг человека** (без изменений по смыслу, добавился только сброс сезона):
+`prepare_scenes.py` (террейн) -> сборка dll -> `python3 tools/validate_module.py`
+на машине с игрой -> запуск миссии -> `bash src/backend-php/tests/smoke.sh` на хосте
+-> NexusMods.
+

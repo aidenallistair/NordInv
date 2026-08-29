@@ -15,7 +15,7 @@ namespace NordInvasion
         {
             Instance = this;
             base.OnSubModuleLoad();
-            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.0 - 29 mechanics Loaded!", Colors.Green));
+            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.1 - 29 mechanics Loaded!", Colors.Green));
         }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
@@ -36,12 +36,14 @@ namespace NordInvasion
             {
                 // Core - original 15
                 mission.AddMissionBehavior(new UI.HUD.NI_HUD_Behavior());
+                mission.AddMissionBehavior(new UI.NI_BuildMenu_Behavior()); // VM стройки: данные для NI_BuildMenu.xml
                 mission.AddMissionBehavior(new NordInvasionWaveManagerBehavior());
                 mission.AddMissionBehavior(new NordInvasionDirectorBehavior());
                 mission.AddMissionBehavior(new NordInvasionWeatherBehavior());
                 mission.AddMissionBehavior(new NordInvasionObjectiveBehavior());
                 mission.AddMissionBehavior(new NordInvasionMutatorBehavior());
                 mission.AddMissionBehavior(new FortressBuildManager());
+                mission.AddMissionBehavior(new PerkManager()); // 1 (PerkManager + LootManager живут в PersistenceManager.cs)
                 mission.AddMissionBehavior(new ScavengeManager());
                 mission.AddMissionBehavior(new SquadManager());
                 mission.AddMissionBehavior(new PersistenceManager());
@@ -61,14 +63,17 @@ namespace NordInvasion
                 mission.AddMissionBehavior(new LastStandBehavior()); // 29
                 mission.AddMissionBehavior(new SupplyBehavior()); // 30
 
-                InformationManager.DisplayMessage(new InformationMessage($"Nord Invasion Better Edition 29 mechanics: {mission.SceneName} Wave 1 | B=Build N=Shop M=Medic R=Commander", Colors.Cyan));
+                InformationManager.DisplayMessage(new InformationMessage(
+                    $"Nord Invasion Better Edition: {mission.SceneName} | F at the armory chest = shop, "
+                    + "F at a perk totem = perk choice, build/shop menus: NI_BuildMenu/NI_Shop (Gauntlet wiring pending)", Colors.Cyan));
             }
         }
 
         protected override void OnBeforeInitialModuleScreenSetAsRoot()
         {
             base.OnBeforeInitialModuleScreenSetAsRoot();
-            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion - B Build, N Shop, M Medic, R Commander, L Last Stand, V Supply", Colors.Yellow));
+            // Честно про то, что доступно без Gauntlet-подключения экранов (docs/AUDIT.md):
+            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion - interact with the armory chest and perk totems by F; hotkeys come with the UI hookup", Colors.Yellow));
         }
     }
 }
