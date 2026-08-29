@@ -15,10 +15,7 @@ namespace NordInvasion
         {
             Instance = this;
             base.OnSubModuleLoad();
-            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.0 Loaded!", Colors.Green));
-            // Harmony patches
-            // var harmony = new Harmony("com.fianna.nordinvasion.better");
-            // harmony.PatchAll();
+            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.0 - 30 mechanics Loaded!", Colors.Green));
         }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
@@ -35,9 +32,9 @@ namespace NordInvasion
         {
             base.OnMissionBehaviorInitialize(mission);
 
-            // Only for our missions mp_ni_*
             if (mission.SceneName != null && mission.SceneName.StartsWith("mp_ni_"))
             {
+                // Core - original 15
                 mission.AddMissionBehavior(new NordInvasionWaveManagerBehavior());
                 mission.AddMissionBehavior(new NordInvasionDirectorBehavior());
                 mission.AddMissionBehavior(new NordInvasionWeatherBehavior());
@@ -47,15 +44,30 @@ namespace NordInvasion
                 mission.AddMissionBehavior(new ScavengeManager());
                 mission.AddMissionBehavior(new SquadManager());
                 mission.AddMissionBehavior(new PersistenceManager());
-                
-                InformationManager.DisplayMessage(new InformationMessage($"Nord Invasion Started: {mission.SceneName} Wave 1", Colors.Cyan));
+                mission.AddMissionBehavior(new LootManager());
+
+                // Level 2 - extra 14 (without pets)
+                mission.AddMissionBehavior(new CommanderBehavior()); // 16
+                mission.AddMissionBehavior(new MoraleBehavior()); // 17
+                // 18 siege weapons are UsableMachines, not behaviors
+                // 19 tempering is UsableMachine Forge
+                mission.AddMissionBehavior(new CampPhaseBehavior()); // 20 + 21 dynamic NPCs
+                mission.AddMissionBehavior(new BossPhaseBehavior()); // 22
+                // 23 traps are UsableMachines
+                mission.AddMissionBehavior(new MetaProgressionManager()); // 24 + 26 ranks
+                mission.AddMissionBehavior(new SpectatorBettingBehavior()); // 27
+                // 28 elemental is AgentComponent
+                mission.AddMissionBehavior(new LastStandBehavior()); // 29
+                mission.AddMissionBehavior(new SupplyBehavior()); // 30
+
+                InformationManager.DisplayMessage(new InformationMessage($"Nord Invasion Better Edition 30 mechanics: {mission.SceneName} Wave 1 | B=Build N=Shop M=Medic R=Commander", Colors.Cyan));
             }
         }
 
         protected override void OnBeforeInitialModuleScreenSetAsRoot()
         {
             base.OnBeforeInitialModuleScreenSetAsRoot();
-            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion - Press B for Build, M for Medic, N for Shop", Colors.Yellow));
+            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion - B Build, N Shop, M Medic, R Commander, L Last Stand, V Supply", Colors.Yellow));
         }
     }
 }
