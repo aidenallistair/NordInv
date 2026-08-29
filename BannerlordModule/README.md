@@ -4,12 +4,13 @@
 
 ## Установка для разработки
 
-1. Установи Bannerlord + Modding Kit (Steam -> Tools -> Mount & Blade II Bannerlord - Modding Kit)
+1. Установи .NET SDK 8.0+ (https://dotnet.microsoft.com/download)
 2. Установи зависимости: ButterLib, UIExtenderEx, ModConfigurationMenu v5 (Nexus)
-3. Клонируй репо в `.../Mount & Blade II Bannerlord/Modules/NordInvasion/`
+3. Клонируй репо
 4. Открой `BannerlordModule/NordInvasion.csproj` в Rider / VS
-5. Пропиши пути к TaleWorlds.*.dll
-6. Скомпилируй -> `Modules/NordInvasion/bin/Win64_Shipping_Client/NordInvasion.dll`
+5. Скомпилируй: `dotnet build NordInvasion.csproj -c Release`
+   (NuGet пакет `Bannerlord.ReferenceAssemblies` подтянет все TaleWorlds сборки автоматически)
+6. Скопируй `Modules/NordInvasion/` в папку игры `Mount & Blade II Bannerlord/Modules/`
 
 ## Структура
 

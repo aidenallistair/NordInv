@@ -5,11 +5,8 @@ BANNERLORD_PATH="$HOME/.steam/steam/steamapps/common/Mount & Blade II Bannerlord
 
 echo "Building Nord Invasion Better Edition..."
 
-if [ ! -f "$BANNERLORD_PATH/bin/Win64_Shipping_Client/TaleWorlds.Core.dll" ]; then
-  echo "Bannerlord not found at $BANNERLORD_PATH"
-  echo "Edit this script and set BANNERLORD_PATH"
-  exit 1
-fi
+echo "Restoring NuGet packages..."
+dotnet restore NordInvasion.csproj
 
 dotnet build NordInvasion.csproj -c Release
 
