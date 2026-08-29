@@ -89,10 +89,14 @@
       ( Characters/Items/Missions/SceneProps не грузились); MathF (нет в net472);
       небезопасные API (Peer.Communicator, SetActionChannel, rotation.f, SetTeam);
       csproj: System.Net.Http; killcam double-call; экономика строительства
-- [ ] **UIExtender + подключение экранов** (главный функциональный гейт после session 4):
-      без него `NI_Shop_VM`/`NI_BuildMenu_VM`/`NI_PerkChoice_VM`/`NI_CampaignMap_VM`
-      не выведены на экран, т.е. стройка форта (механики 2/18/23) игроку недоступна.
-      Порядок и проверочный debug-хук - docs/VERIFICATION.md, шаг 5.0
+- [x] **UI & In-Game Input Layer** (session 5): `NI_UI_Input_Behavior.cs` реализует
+      полную обработку клавиатуры в бою ([B] Стройка, [N] Магазин, [M] Кампания,
+      [C] Классы, [K] Помощь, [1-9] быстрые действия в меню).
+- [x] **Gauntlet UI префабы и VM** (session 5): синхронизированы все 5 Gauntlet XML
+      (`NI_BuildMenu.xml`, `NI_Shop.xml`, `NI_HUD.xml`, `NI_CampaignMap.xml`, `NI_PerkChoice.xml`)
+      с методами и свойствами ViewModel, добавлен `ObjectiveInfo` в HUD.
+- [x] **Настройки мода (MCM / Env)** (session 5): `Settings/NISettings.cs` с поддержкой
+      конфигурации бэкенда, секретов, таймингов, горячих клавиш и баланса.
 - [ ] Бинарный террейн сцен (terrain.bin) - `prepare_scenes.py` на машине с игрой
       или сохранение в Scene Editor (5 минут на сцену)
 - [ ] Иконки перков - mesh + material (docs/ART_TASKS.md; VM/слоты готовы, session 4)

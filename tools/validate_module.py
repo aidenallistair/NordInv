@@ -22,12 +22,14 @@ def err(m): errors.append(m)
 def warn(m): warnings.append(m)
 
 
-# 1. Все XML валидны
-for f in sorted(glob.glob(os.path.join(MOD, "**", "*.xml"), recursive=True)):
+# 1. Все XML и csproj валидны
+for f in sorted(glob.glob(os.path.join(REPO_ROOT, "**", "*.xml"), recursive=True) + glob.glob(os.path.join(REPO_ROOT, "**", "*.csproj"), recursive=True)):
+    if ".git" in f or "dist" in f:
+        continue
     try:
         ET.parse(f)
     except Exception as e:
-        err(f"XML {os.path.relpath(f, REPO_ROOT)}: {e}")
+        err(f"XML/CSPROJ {os.path.relpath(f, REPO_ROOT)}: {e}")
 
 # 2. SubModule.xml регистрирует все ModuleData-XML
 sub = ET.parse(os.path.join(MOD, "SubModule.xml")).getroot()
