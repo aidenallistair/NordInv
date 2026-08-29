@@ -4,13 +4,8 @@ echo Building Nord Invasion Better Edition for Bannerlord...
 REM Set Bannerlord path - change to your path
 set BANNERLORD_PATH=C:\Program Files (x86)\Steam\steamapps\common\Mount & Blade II Bannerlord
 
-echo Checking Bannerlord path: %BANNERLORD_PATH%
-if not exist "%BANNERLORD_PATH%\bin\Win64_Shipping_Client\TaleWorlds.Core.dll" (
-  echo ERROR: Bannerlord not found at %BANNERLORD_PATH%
-  echo Please edit this bat and set BANNERLORD_PATH
-  pause
-  exit /b
-)
+echo Restoring NuGet packages...
+dotnet restore NordInvasion.csproj
 
 echo Building with dotnet...
 dotnet build NordInvasion.csproj -c Release
