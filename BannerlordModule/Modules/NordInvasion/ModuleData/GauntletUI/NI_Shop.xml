@@ -1,16 +1,45 @@
 <Prefabs>
   <Prefab Name="NI_Shop" DataSource="NI_Shop_VM">
-    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="600" SuggestedHeight="700" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="700" SuggestedHeight="800" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
       <Children>
-        <TextWidget DataSource="{GoldText}" HorizontalAlignment="Center" MarginTop="20" Brush="Singleplayer.Text"/>
-        <ButtonWidget DataSource="{BuySwordCommand}" Text="Buy Sword (50g)" MarginTop="80" SuggestedWidth="400" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
-        <ButtonWidget DataSource="{BuyBowCommand}" Text="Buy Bow (80g)" MarginTop="130" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuyArmorCommand}" Text="Buy Armor (100g)" MarginTop="180" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuyBarricadeCommand}" Text="Buy Barricade Kit (150g + 5 wood)" MarginTop="230" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuyStakesCommand}" Text="Buy Stakes vs Cav (100g + 4 wood)" MarginTop="280" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuyOilCommand}" Text="Buy Oil Cauldron (200g + 10w 5m)" MarginTop="330" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuyBallistaCommand}" Text="Buy Ballista (300g + 15w 10m)" MarginTop="380" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{CloseCommand}" Text="Close (ESC)" MarginTop="600" SuggestedWidth="200" HorizontalAlignment="Center"/>
+        <!-- Header & Currency Status -->
+        <TextWidget Text="Nord Invasion Shop &amp; Armory (Press N to toggle)" HorizontalAlignment="Center" MarginTop="15" Brush="Singleplayer.Text"/>
+        <TextWidget DataSource="{GoldText}" HorizontalAlignment="Center" MarginTop="45" Brush="Singleplayer.Text"/>
+        <TextWidget DataSource="{BattlepassText}" HorizontalAlignment="Center" MarginTop="70" Brush="Singleplayer.Text"/>
+
+        <!-- Dynamic Catalog Text View -->
+        <TextWidget DataSource="{ItemsText}" HorizontalAlignment="Center" MarginTop="100" SuggestedWidth="600" Brush="Singleplayer.Text"/>
+
+        <!-- Action Buttons for Slots 1 to 8 -->
+        <Widget SuggestedWidth="620" SuggestedHeight="360" HorizontalAlignment="Center" MarginTop="240" LayoutImp="Vertical">
+          <Children>
+            <ButtonWidget Command.Click="ExecuteBuySlot1" DataSource="{BuySlot1Command}" Text="Buy Slot 1" MarginTop="5" SuggestedWidth="450" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteBuySlot2" DataSource="{BuySlot2Command}" Text="Buy Slot 2" MarginTop="5" SuggestedWidth="450" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteBuySlot3" DataSource="{BuySlot3Command}" Text="Buy Slot 3" MarginTop="5" SuggestedWidth="450" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteBuySlot4" DataSource="{BuySlot4Command}" Text="Buy Slot 4" MarginTop="5" SuggestedWidth="450" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteBuySlot5" DataSource="{BuySlot5Command}" Text="Buy Slot 5" MarginTop="5" SuggestedWidth="450" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteBuySlot6" DataSource="{BuySlot6Command}" Text="Buy Slot 6" MarginTop="5" SuggestedWidth="450" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteBuySlot7" DataSource="{BuySlot7Command}" Text="Buy Slot 7" MarginTop="5" SuggestedWidth="450" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteBuySlot8" DataSource="{BuySlot8Command}" Text="Buy Slot 8" MarginTop="5" SuggestedWidth="450" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+          </Children>
+        </Widget>
+
+        <!-- Navigation & BattlePass Claim Controls -->
+        <Widget SuggestedWidth="600" SuggestedHeight="50" HorizontalAlignment="Center" MarginTop="620" LayoutImp="Horizontal">
+          <Children>
+            <ButtonWidget Command.Click="ExecutePrevPage" DataSource="{PrevPageCommand}" Text="&lt; Prev Page" SuggestedWidth="180" HorizontalAlignment="Left" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteClaimBattlepass" DataSource="{ClaimBattlepassCommand}" Text="Claim BattlePass [P]" SuggestedWidth="200" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteNextPage" DataSource="{NextPageCommand}" Text="Next Page &gt;" SuggestedWidth="180" HorizontalAlignment="Right" Brush="Singleplayer.Button"/>
+          </Children>
+        </Widget>
+
+        <!-- Bottom Controls -->
+        <Widget SuggestedWidth="400" SuggestedHeight="45" HorizontalAlignment="Center" MarginTop="690" LayoutImp="Horizontal">
+          <Children>
+            <ButtonWidget Command.Click="ExecuteReload" DataSource="{ReloadCommand}" Text="Reload Catalog" SuggestedWidth="180" HorizontalAlignment="Left" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteClose" DataSource="{CloseCommand}" Text="Close (ESC)" SuggestedWidth="180" HorizontalAlignment="Right" Brush="Singleplayer.Button"/>
+          </Children>
+        </Widget>
       </Children>
     </Widget>
   </Prefab>

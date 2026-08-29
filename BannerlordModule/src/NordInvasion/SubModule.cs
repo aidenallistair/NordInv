@@ -4,6 +4,7 @@ using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
 using NordInvasion.Behaviors;
 using NordInvasion.Managers;
+using NordInvasion.Settings;
 
 namespace NordInvasion
 {
@@ -15,6 +16,7 @@ namespace NordInvasion
         {
             Instance = this;
             base.OnSubModuleLoad();
+            NISettings.Instance.LoadFromEnvironment();
             InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.1 - 29 mechanics Loaded!", Colors.Green));
         }
 
@@ -34,9 +36,12 @@ namespace NordInvasion
 
             if (mission.SceneName != null && mission.SceneName.StartsWith("mp_ni_"))
             {
-                // Core - original 15
+                // UI and Input
                 mission.AddMissionBehavior(new UI.HUD.NI_HUD_Behavior());
                 mission.AddMissionBehavior(new UI.NI_BuildMenu_Behavior()); // VM стройки: данные для NI_BuildMenu.xml
+                mission.AddMissionBehavior(new UI.NI_UI_Input_Behavior());  // Горячие клавиши B/N/M/C/K
+
+                // Core - original 15
                 mission.AddMissionBehavior(new NordInvasionWaveManagerBehavior());
                 mission.AddMissionBehavior(new NordInvasionDirectorBehavior());
                 mission.AddMissionBehavior(new NordInvasionWeatherBehavior());
@@ -64,16 +69,15 @@ namespace NordInvasion
                 mission.AddMissionBehavior(new SupplyBehavior()); // 30
 
                 InformationManager.DisplayMessage(new InformationMessage(
-                    $"Nord Invasion Better Edition: {mission.SceneName} | F at the armory chest = shop, "
-                    + "F at a perk totem = perk choice, build/shop menus: NI_BuildMenu/NI_Shop (Gauntlet wiring pending)", Colors.Cyan));
+                    $"Nord Invasion Better Edition: {mission.SceneName} | [B] Build | [N] Shop | [M] Campaign | [C] Classes | [K] Help | [F] Armory/Totems", Colors.Cyan));
             }
         }
 
         protected override void OnBeforeInitialModuleScreenSetAsRoot()
         {
             base.OnBeforeInitialModuleScreenSetAsRoot();
-            // Честно про то, что доступно без Gauntlet-подключения экранов (docs/AUDIT.md):
-            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion - interact with the armory chest and perk totems by F; hotkeys come with the UI hookup", Colors.Yellow));
+            InformationManager.DisplayMessage(new InformationMessage(
+                "Nord Invasion - [B] Build Menu, [N] Shop & BattlePass, [M] Campaign Map, [C] Class Select, [F] Chests & Totems", Colors.Yellow));
         }
     }
 }

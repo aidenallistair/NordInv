@@ -43,9 +43,12 @@ namespace NordInvasion.Managers
         public override void OnBehaviorInitialize()
         {
             base.OnBehaviorInitialize();
-            // Dedicated-сервер может задать адрес без пересборки dll:
+            // Dedicated-сервер может задать адрес без пересборки dll или через NISettings:
             //   set NI_BACKEND_URL=http://10.0.0.5:8080
             //   set NI_API_SECRET=тот-же-секрет-что-в-config.php
+            var settings = Settings.NISettings.Instance;
+            if (!string.IsNullOrEmpty(settings.BackendUrl)) BackendUrl = settings.BackendUrl.TrimEnd('/');
+            if (!string.IsNullOrEmpty(settings.ApiSecret)) ApiSecret = settings.ApiSecret;
             var url = Environment.GetEnvironmentVariable("NI_BACKEND_URL");
             if (!string.IsNullOrEmpty(url)) BackendUrl = url.TrimEnd('/');
             var secret = Environment.GetEnvironmentVariable("NI_API_SECRET");

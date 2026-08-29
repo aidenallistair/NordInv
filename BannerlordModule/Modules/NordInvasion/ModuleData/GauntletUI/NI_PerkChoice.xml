@@ -1,37 +1,41 @@
 <Prefabs>
   <Prefab Name="NI_PerkChoice" DataSource="NI_PerkChoice_VM">
-    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1000" SuggestedHeight="600" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1000" SuggestedHeight="640" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
       <Children>
-        <TextWidget Text="Choose a Perk! Wave Bonus" HorizontalAlignment="Center" MarginTop="20" Brush="Singleplayer.Text"/>
-        <TextWidget DataSource="{TimeLeft}" Text="Time: {TimeLeft}s" HorizontalAlignment="Center" MarginTop="50" Brush="Singleplayer.Text"/>
+        <TextWidget Text="Choose a Perk! Wave Roguelite Bonus" HorizontalAlignment="Center" MarginTop="15" Brush="Singleplayer.Text"/>
+        <TextWidget DataSource="{TimeLeft}" Text="Time Left: {TimeLeft}s" HorizontalAlignment="Center" MarginTop="45" Brush="Singleplayer.Text"/>
 
-        <Widget SuggestedWidth="900" SuggestedHeight="420" HorizontalAlignment="Center" MarginTop="90" LayoutImp="Horizontal">
+        <Widget SuggestedWidth="900" SuggestedHeight="420" HorizontalAlignment="Center" MarginTop="80" LayoutImp="Horizontal">
           <Children>
-            <ButtonWidget DataSource="{Choose1Command}" SuggestedWidth="280" SuggestedHeight="370" MarginRight="20" Brush="Singleplayer.Button">
+            <ButtonWidget Command.Click="ExecuteChoose1" DataSource="{Choose1Command}" SuggestedWidth="280" SuggestedHeight="380" MarginRight="20" Brush="Singleplayer.Button">
               <Children>
-                <!-- Иконка перка (появится после арт-задачи, см. docs/ART_TASKS.md).
-                     Пустой {Perk1Icon} = изображение не рендерится, текст смещается вниз. -->
+                <!-- Иконка перка (см. docs/ART_TASKS.md). Пустой Perk1Icon = текст смещается вниз -->
                 <ImageWidget DataSource="{Perk1Icon}" SuggestedWidth="120" SuggestedHeight="120" HorizontalAlignment="Center" MarginTop="20"/>
-                <TextWidget DataSource="{Perk1Name}" MarginTop="160" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
-                <TextWidget DataSource="{Perk1Desc}" MarginTop="200" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
+                <TextWidget DataSource="{Perk1Name}" MarginTop="150" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
+                <TextWidget DataSource="{Perk1Desc}" MarginTop="190" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
               </Children>
             </ButtonWidget>
-            <ButtonWidget DataSource="{Choose2Command}" SuggestedWidth="280" SuggestedHeight="370" MarginRight="20">
+
+            <ButtonWidget Command.Click="ExecuteChoose2" DataSource="{Choose2Command}" SuggestedWidth="280" SuggestedHeight="380" MarginRight="20" Brush="Singleplayer.Button">
               <Children>
                 <ImageWidget DataSource="{Perk2Icon}" SuggestedWidth="120" SuggestedHeight="120" HorizontalAlignment="Center" MarginTop="20"/>
-                <TextWidget DataSource="{Perk2Name}" MarginTop="160" HorizontalAlignment="Center"/>
-                <TextWidget DataSource="{Perk2Desc}" MarginTop="200" HorizontalAlignment="Center"/>
+                <TextWidget DataSource="{Perk2Name}" MarginTop="150" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
+                <TextWidget DataSource="{Perk2Desc}" MarginTop="190" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
               </Children>
             </ButtonWidget>
-            <ButtonWidget DataSource="{Choose3Command}" SuggestedWidth="280" SuggestedHeight="370">
+
+            <ButtonWidget Command.Click="ExecuteChoose3" DataSource="{Choose3Command}" SuggestedWidth="280" SuggestedHeight="380" Brush="Singleplayer.Button">
               <Children>
                 <ImageWidget DataSource="{Perk3Icon}" SuggestedWidth="120" SuggestedHeight="120" HorizontalAlignment="Center" MarginTop="20"/>
-                <TextWidget DataSource="{Perk3Name}" MarginTop="160" HorizontalAlignment="Center"/>
-                <TextWidget DataSource="{Perk3Desc}" MarginTop="200" HorizontalAlignment="Center"/>
+                <TextWidget DataSource="{Perk3Name}" MarginTop="150" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
+                <TextWidget DataSource="{Perk3Desc}" MarginTop="190" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
               </Children>
             </ButtonWidget>
           </Children>
         </Widget>
+
+        <!-- Skip / Random Choice -->
+        <ButtonWidget Command.Click="ExecuteSkip" DataSource="{SkipCommand}" Text="Skip / Random Perk" MarginTop="520" SuggestedWidth="250" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
       </Children>
     </Widget>
   </Prefab>

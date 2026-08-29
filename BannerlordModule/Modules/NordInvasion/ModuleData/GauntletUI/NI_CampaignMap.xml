@@ -1,18 +1,32 @@
 <Prefabs>
   <Prefab Name="NI_CampaignMap" DataSource="NI_CampaignMap_VM">
-    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1000" SuggestedHeight="700" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1000" SuggestedHeight="760" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
       <Children>
-        <TextWidget Text="Swadia Campaign - Choose Village to Defend" HorizontalAlignment="Center" MarginTop="20" Brush="Singleplayer.Text"/>
-        <Widget SuggestedWidth="900" SuggestedHeight="600" MarginTop="80" LayoutImp="Vertical">
+        <TextWidget Text="Swadia Campaign - Choose Village to Defend (Press M to toggle)" HorizontalAlignment="Center" MarginTop="15" Brush="Singleplayer.Text"/>
+        <TextWidget DataSource="{Info}" HorizontalAlignment="Center" MarginTop="45" Brush="Singleplayer.Text"/>
+
+        <!-- Village List & Status -->
+        <TextWidget DataSource="{VillageRows}" HorizontalAlignment="Center" MarginTop="80" SuggestedWidth="900" Brush="Singleplayer.Text"/>
+
+        <!-- Voting Buttons for 8 Villages -->
+        <Widget SuggestedWidth="900" SuggestedHeight="450" MarginTop="220" HorizontalAlignment="Center" LayoutImp="Vertical">
           <Children>
-            <ButtonWidget DataSource="{Village1Command}" Text="Village of Jelbegi (Easy) - Plain" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
-            <ButtonWidget DataSource="{Village2Command}" Text="Forest Hamlet (Medium) - Forest" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
-            <ButtonWidget DataSource="{Village3Command}" Text="Castle Outpost (Hard) - Castle" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
-            <ButtonWidget DataSource="{Village4Command}" Text="Bridge Fort (Chokepoint) - Best for barricades" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
-            <ButtonWidget DataSource="{Village5Command}" Text="Snow Village (Hard) - Snow, Nords own" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
-            <ButtonWidget DataSource="{Village6Command}" Text="Desert Oasis (Medium)" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
-            <ButtonWidget DataSource="{Village7Command}" Text="Mountain Keep (Very Hard) - Nords own" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
-            <ButtonWidget DataSource="{Village8Command}" Text="Coastal Town (Medium)" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
+            <ButtonWidget Command.Click="ExecuteVillage1" DataSource="{Village1Command}" Text="Vote: 1. Village of Jelbegi (Easy) - Plains" MarginTop="5" SuggestedWidth="600" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteVillage2" DataSource="{Village2Command}" Text="Vote: 2. Forest Hamlet (Medium) - Forest" MarginTop="5" SuggestedWidth="600" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteVillage3" DataSource="{Village3Command}" Text="Vote: 3. Castle Outpost (Hard) - Castle" MarginTop="5" SuggestedWidth="600" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteVillage4" DataSource="{Village4Command}" Text="Vote: 4. Bridge Fort (Chokepoint) - Best for barricades" MarginTop="5" SuggestedWidth="600" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteVillage5" DataSource="{Village5Command}" Text="Vote: 5. Snow Village (Hard) - Snow, Nords own" MarginTop="5" SuggestedWidth="600" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteVillage6" DataSource="{Village6Command}" Text="Vote: 6. Desert Oasis (Medium)" MarginTop="5" SuggestedWidth="600" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteVillage7" DataSource="{Village7Command}" Text="Vote: 7. Mountain Keep (Very Hard) - Nords own" MarginTop="5" SuggestedWidth="600" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteVillage8" DataSource="{Village8Command}" Text="Vote: 8. Coastal Town (Medium)" MarginTop="5" SuggestedWidth="600" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+          </Children>
+        </Widget>
+
+        <!-- Actions -->
+        <Widget SuggestedWidth="500" SuggestedHeight="50" HorizontalAlignment="Center" MarginTop="680" LayoutImp="Horizontal">
+          <Children>
+            <ButtonWidget Command.Click="ExecuteRefresh" DataSource="{RefreshCommand}" Text="Refresh Votes" SuggestedWidth="220" HorizontalAlignment="Left" Brush="Singleplayer.Button"/>
+            <ButtonWidget Command.Click="ExecuteMakeCamp" DataSource="{MakeCampCommand}" Text="Make Camp Here" SuggestedWidth="220" HorizontalAlignment="Right" Brush="Singleplayer.Button"/>
           </Children>
         </Widget>
       </Children>

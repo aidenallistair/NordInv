@@ -1,17 +1,29 @@
 <Prefabs>
   <Prefab Name="NI_BuildMenu" DataSource="NI_BuildMenu_VM">
-    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="600" SuggestedHeight="700" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="700" SuggestedHeight="800" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
       <Children>
-        <TextWidget Text="Fortress Builder" HorizontalAlignment="Center" MarginTop="20" Brush="Singleplayer.Text"/>
-        <TextWidget DataSource="{Resources}" HorizontalAlignment="Center" MarginTop="50" Brush="Singleplayer.Text"/>
-        <ButtonWidget DataSource="{BuildFoundationCommand}" Text="Foundation (5 wood)" MarginTop="100" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuildWallCommand}" Text="Wall (3 wood) - needs foundation" MarginTop="150" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuildDoorCommand}" Text="Door (5 wood + 2 metal)" MarginTop="200" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuildStakesCommand}" Text="Stakes vs Cavalry (4 wood)" MarginTop="250" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuildOilCommand}" Text="Oil Cauldron (10 wood + 5 metal)" MarginTop="300" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuildBrazierCommand}" Text="Brazier - Light (2 wood)" MarginTop="350" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <ButtonWidget DataSource="{BuildShieldWallCommand}" Text="Shield Wall (6 wood)" MarginTop="400" SuggestedWidth="400" HorizontalAlignment="Center"/>
-        <TextWidget Text="Engineer repairs 2x faster, can build Tier2" HorizontalAlignment="Center" MarginTop="500" Brush="Singleplayer.Text"/>
+        <TextWidget Text="Fortress Builder (Press B to toggle)" HorizontalAlignment="Center" MarginTop="15" Brush="Singleplayer.Text"/>
+        <TextWidget DataSource="{Resources}" HorizontalAlignment="Center" MarginTop="45" Brush="Singleplayer.Text"/>
+        <TextWidget DataSource="{LockedInfo}" HorizontalAlignment="Center" MarginTop="70" Brush="Singleplayer.Text"/>
+
+        <!-- Base Fortifications -->
+        <ButtonWidget Command.Click="ExecuteBuildFoundation" DataSource="{BuildFoundationCommand}" Text="1. Foundation (5 wood)" MarginTop="100" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildWall" DataSource="{BuildWallCommand}" Text="2. Wall (3 wood) - needs foundation" MarginTop="145" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildDoor" DataSource="{BuildDoorCommand}" Text="3. Door (5 wood + 2 metal)" MarginTop="190" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildStakes" DataSource="{BuildStakesCommand}" Text="4. Stakes vs Cavalry (4 wood)" MarginTop="235" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildOil" DataSource="{BuildOilCommand}" Text="5. Oil Cauldron (10 wood + 5 metal)" MarginTop="280" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildBrazier" DataSource="{BuildBrazierCommand}" Text="6. Brazier Light Source (2 wood)" MarginTop="325" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildShieldWall" DataSource="{BuildShieldWallCommand}" Text="7. Shield Wall Barricade (6 wood)" MarginTop="370" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildSpikeTrap" DataSource="{BuildSpikeTrapCommand}" Text="8. Spike Trap (2 wood)" MarginTop="415" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+
+        <!-- Advanced & Siege (Mechanics 18 & 23) -->
+        <ButtonWidget Command.Click="ExecuteBuildBallista" DataSource="{BuildBallistaCommand}" Text="9. Ballista Piercing (8 wood + 6 metal)" MarginTop="460" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildCatapult" DataSource="{BuildCatapultCommand}" Text="10. Catapult AOE (12 wood + 10 metal)" MarginTop="505" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildRockTrap" DataSource="{BuildRockTrapCommand}" Text="11. Rock Trap (3 wood + 4 metal)" MarginTop="550" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildLogTrap" DataSource="{BuildLogTrapCommand}" Text="12. Log Trap (6 wood)" MarginTop="595" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+        <ButtonWidget Command.Click="ExecuteBuildOilDitch" DataSource="{BuildOilDitchCommand}" Text="13. Oil Ditch (4 wood + 5 metal)" MarginTop="640" SuggestedWidth="500" HorizontalAlignment="Center" Brush="Singleplayer.Button"/>
+
+        <TextWidget Text="Engineer repairs 2x faster and unlocks advanced defenses" HorizontalAlignment="Center" MarginTop="700" Brush="Singleplayer.Text"/>
       </Children>
     </Widget>
   </Prefab>
