@@ -116,3 +116,51 @@
 3. Запустить Custom Battle mp_ni_bridge_01 -> mp_nord_invasion
 4. Прогнать тест-чеклист (LAUNCH_GUIDE.md), поправить ID частиц/звуков
 5. Upload на NexusMods
+
+## Session 3 (2026-08-29): персистенция через MySQL + PHP + Dedicated Server
+
+Задание: «сохранение вещей и прокачки через mysql+php+dedicated server».
+
+**Сделано:**
+
+1. **PHP-бэкенд** (`src/backend-php/`, новый):
+   - `config.php` — драйвер mysql/sqlite, креды, `API_SECRET` (X-NI-Secret),
+     allowlist чертежей.
+   - `lib.php` — PDO-синглтон, JSON out/fail, form+JSON body reader, проверка
+     секрета, идентичность игрока (`steam_<id>` / `name_<md5>`), профиль, XP/level.
+   - `index.php` — front controller, 16 маршрутов: player login/get, kill,
+     wave/complete, perk/record, run/save, blueprint/unlock, meta/unlock,
+     stat/increment (авто-титулы), campaign (villages/battle/vote), season,
+     leaderboard, battlepass, health.
+   - `schema.sql` + `install.php` — 7 таблиц (players c JSON-колонками perks/
+     blueprints/meta/titles, kill_log, villages, seasons, battlepass_rewards,
+     skill_nodes, campaign_votes c UNIQUE-голосом) + seed (8 деревень, сезон,
+     7 battlepass-наград, 7 skill nodes). DDL driver-aware (MySQL/SQLite).
+   - `README.md` — деплой Linux (nginx+php-fpm) и Windows (IIS) пошагово.
+   - `tests/smoke.sh` — 18 проверок API через curl.
+2. **C#-подключение** (рефакторинг под PHP-контракт):
+   - `PersistenceManager` переписан: статические `BackendUrl`/`ApiSecret`,
+     единый `PostForm` (X-NI-Secret), логин парсит реальный JSON (`NIJson`),
+     `ApplyProfile` применяет gold/wood/metal/perks/titles/meta к агенту,
+     события: OnKill(gold,is_boss), OnWaveCompletedFor, ReportPerk, SaveRun,
+     OnMedicRevive, OnBuildPlaced, UnlockBlueprint, UnlockMetaNode,
+     OnCampaignWin (csv из player_id).
+   - Новый `Utils/NIJson.cs` — JSON-парсер без зависимостей.
+   - `NIPeers`: `GetSteamId` (reflection-safe: SteamId64/Id/SessionId),
+     `MakePlayerId` (та же формула, что в PHP).
+   - Хуки: WaveManager (kill с реальным gold; +20g волны -> backend; победа/
+     поражение -> run/save), MedicComponent (revives), FortressBuildManager
+     (builds), PerkManager (perk/record), MetaProgressionManager (бонусы из
+     meta-узлов, не из blueprints — логический баг исправлен).
+3. **Доки:** `docs/BACKEND_PHP.md` (архитектура, API-таблица, решения),
+   LAUNCH_GUIDE (секция backend -> PHP+MySQL), README.
+4. **Релиз:** `make_release.py` включает `backend-php/`, зип пересобран.
+
+**Проверено в песочнице:** все 7 DDL + seed + все SQL-выражения API прогнаны
+через sqlite (GREATEST заменён на CASE для кросс-драйверности; UNIQUE KEY ->
+UNIQUE constraint в sqlite-ветке). C#: 31 файл, brace/paren-баланс OK.
+PHP-рантайма в песочнице нет — на хосте: `bash tests/smoke.sh`.
+
+**Осталось (человеку):** MySQL+PHP на dedicated-хосте (гайд в README),
+прописать URL/секрет в моде, smoke-тест, после — shop UI -> UnlockBlueprint,
+battlepass claim, сброс сезона.

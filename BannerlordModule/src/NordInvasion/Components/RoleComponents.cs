@@ -61,6 +61,9 @@ namespace NordInvasion.Components
                     var goldComp = Agent.GetComponent<Managers.PersistenceManager.PlayerGoldComponent>();
                     goldComp?.AddGold(5);
 
+                    // ранг Savior: 50 реанимаций (бэкенд считает)
+                    Mission.Current.GetMissionBehavior<Managers.PersistenceManager>()?.OnMedicRevive(Agent);
+
                     // Last Stand check
                     var lastStand = Mission.Current.GetMissionBehavior<Behaviors.LastStandBehavior>();
                     lastStand?.OnPlayerRevived();

@@ -29,7 +29,8 @@ BannerlordModule/ - C# мод
     Models/ - WaveDefinition, Mutator, Perk, Village
 
 DedicatedServer/Bannerlord/ - конфиг и скрипты для выделенного сервера
-src/backend/ - FastAPI бекенд для персистенции, кампании, сезонов
+src/backend-php/ - PHP+MySQL бекенд персистенции (продакшн, на dedicated-хосте)
+src/backend/ - FastAPI бекенд (dev-фоллбэк, тот же API)
 
 docs/BANNERLORD_PLAN_RU.md - полный план реализации 15 механик
 ```
@@ -58,18 +59,30 @@ TaleWorlds.MountAndBlade.DedicatedCustomServer.exe /dedicatedcustomserverconfig 
 
 ## Backend (персистенция, кампания, сезоны)
 
+**PHP 7.4+ + MySQL** — на хосте выделенного сервера. Гайд: `docs/BACKEND_PHP.md`,
+пошаговая установка: `src/backend-php/README.md`.
+
 ```bash
-cd src/backend
-pip install -r requirements.txt
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+mysql -e "CREATE DATABASE nordinv CHARACTER SET utf8mb4;"
+cp -r src/backend-php/. /var/www/nordinv/
+# правим /var/www/nordinv/config.php (DB_*, API_SECRET)
+php /var/www/nordinv/install.php          # схема + деревни/сезон/battlepass/nodes
+bash /var/www/nordinv/tests/smoke.sh http://host <API_SECRET>
 ```
 
-API:
-- `POST /api/player/login` - логин по SteamID
-- `POST /api/kill` - убийство, золото, ресурсы
-- `GET /api/campaign/villages` - деревни кампании
-- `POST /api/campaign/battle` - результат битвы за деревню
-- `GET /api/leaderboard` - топ игроков
+Подключение мода: `PersistenceManager.BackendUrl` + `PersistenceManager.ApiSecret`.
+
+API (form-encoded → JSON):
+- `POST /api/player/login` - логин (steam_id / name), создаёт профиль
+- `POST /api/kill` - убийство: золото, ресурсы, XP, босс
+- `POST /api/wave/complete` - награды волны + best_wave
+- `POST /api/perk/record` / `POST /api/meta/unlock` - перки и мета-дерево
+- `POST /api/run/save` - победа/поражение забега
+- `GET /api/campaign/villages` / `POST /api/campaign/battle` / `POST /api/campaign/vote`
+- `GET /api/leaderboard` - топ-20 по season_points
+
+> Dev-фоллбэк без MySQL: FastAPI `src/backend/` (тот же API) или
+> `config.php` с `DB_DRIVER="sqlite"`.
 
 ## 15 механик Better Edition
 
@@ -101,9 +114,13 @@ API:
    между патчами Bannerlord; см. BUILD_FROM_SOURCE.md)
 3. **Тест:** Custom Battle -> `mp_ni_bridge_01` -> `mp_nord_invasion`,
    пройти чеклист из `docs/LAUNCH_GUIDE.md`
-4. **Арт-задачи** (docs/ART_TASKS.md): иконки перков, меши ni_*-пропсов,
+4. **Backend персистентности (MySQL + PHP, на хосте dedicated-сервера):**
+   `src/backend-php/` готов: `config.php` -> `php install.php` -> nginx/IIS ->
+   `bash tests/smoke.sh`. Гайд: `docs/BACKEND_PHP.md`. Мод подключается
+   строками `PersistenceManager.BackendUrl / ApiSecret` (URL + секрет).
+5. **Арт-задачи** (docs/ART_TASKS.md): иконки перков, меши ni_*-пропсов,
    кастомные звуки (UI и код уже готовы, ждут ассеты)
-5. **Тест Dedicated Server** (2 клиента, SteamCMD) -> upload на NexusMods
+6. **Тест Dedicated Server** (2 клиента, SteamCMD) -> upload на NexusMods
    (source-зип уже собран: `dist/NiNordInvasion_v2_0_0_source.zip`)
 
 Полезные инструменты: `tools/validate_module.py` (проверка модуля перед релизом),

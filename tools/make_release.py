@@ -65,9 +65,11 @@ def main() -> None:
         walk(os.path.join(REPO_ROOT, "docs"), f"{prefix}/docs", zf)
         for f in os.listdir(os.path.join(REPO_ROOT, "tools")):
             zf.write(os.path.join(REPO_ROOT, "tools", f), f"{prefix}/tools/{f}")
-        # Backend
+        # Backend (dev FastAPI, остаётся в комплекте)
         for f in os.listdir(os.path.join(REPO_ROOT, "src", "backend")):
             zf.write(os.path.join(REPO_ROOT, "src", "backend", f), f"{prefix}/backend/{f}")
+        # Backend PHP + MySQL (продакшн-персистентность)
+        walk(os.path.join(REPO_ROOT, "src", "backend-php"), f"{prefix}/backend-php", zf)
         # Dedicated server
         walk(os.path.join(REPO_ROOT, "DedicatedServer"), f"{prefix}/dedicated-server", zf)
         # Релиз-ноты

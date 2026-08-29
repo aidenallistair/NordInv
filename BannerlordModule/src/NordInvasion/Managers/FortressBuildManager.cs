@@ -13,9 +13,11 @@ namespace NordInvasion.Managers
         // Максимум построек на забег (ограничение на кол-во сущностей)
         public const int MaxBuildings = 40;
         public int BuiltCount = 0;
+        private Agent _builder;
 
         public bool TryPlace(BuildType type, Agent builder)
         {
+            _builder = builder;
             var goldComp = builder.GetComponent<PersistenceManager.PlayerGoldComponent>();
             if (goldComp == null) return false;
 
@@ -105,6 +107,9 @@ namespace NordInvasion.Managers
 
             BuiltCount++;
             InformationManager.DisplayMessage(new InformationMessage($"Placed {entity.Name}! Engineer can repair with hammer", Colors.Green));
+
+            // ранг Master Engineer: 100 построек (бэкенд считает)
+            Mission.GetMissionBehavior<PersistenceManager>()?.OnBuildPlaced(_builder);
         }
 
         /// <summary>Чинит пропс с DestructibleComponent (+20 HP * перк инженера).</summary>

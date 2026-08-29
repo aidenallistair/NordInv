@@ -124,37 +124,60 @@ wine bin/Win64_Shipping_Client/TaleWorlds.MountAndBlade.DedicatedCustomServer.ex
 
 ## Для Backend (персистенция, кампания, сезоны)
 
+**PHP 7.4+ + MySQL 8**, крутится на хосте выделенного сервера. Полный гайд:
+[`docs/BACKEND_PHP.md`](BACKEND_PHP.md), детали установки — `src/backend-php/README.md`.
+
 ### Требования:
-- Python 3.11+
-- FastAPI
+- PHP 7.4+ с `pdo_mysql`
+- MySQL 5.7+ / 8.x (или MariaDB)
+- nginx (Linux) или IIS (Windows)
 
 ### Установка:
 
 ```bash
-cd src/backend
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+# 1. База
+mysql -u root -p -e "CREATE DATABASE nordinv CHARACTER SET utf8mb4;"
+
+# 2. Код
+mkdir -p /var/www/nordinv && cp -r src/backend-php/. /var/www/nordinv/
+
+# 3. Конфиг: /var/www/nordinv/config.php
+#    DB_NAME/DB_USER/DB_PASS, API_SECRET (совместный с модом)
+
+# 4. Схема + начальные данные (деревни, сезон, battlepass, skill nodes)
+php /var/www/nordinv/install.php
+
+# 5. nginx-сайт (пример в src/backend-php/README.md) + reload
+
+# 6. Smoke-тест (должно быть "18 ok, 0 fail")
+bash /var/www/nordinv/tests/smoke.sh http://nordinv.example.com <API_SECRET>
 ```
 
-Открой http://localhost:8000/docs - Swagger UI
+> Dev-режим без MySQL: в `config.php` `DB_DRIVER = "sqlite"`,
+> `php -S 0.0.0.0:8080 -t src/backend-php`.
 
 ### Настройка в моде:
 
-В `BannerlordModule/src/NordInvasion/Managers/PersistenceManager.cs`:
+В `BannerlordModule/src/NordInvasion/Managers/PersistenceManager.cs`
+(статические поля, задаются при старте миссии):
 
 ```csharp
-private string _backendUrl = "http://YOUR_SERVER_IP:8000";
+PersistenceManager.BackendUrl = "http://127.0.0.1:8080";
+PersistenceManager.ApiSecret  = "тот-же-секрет-что-в-config.php";
 ```
 
 Скомпилируй заново.
 
-### Что хранит backend:
+### Что хранит backend (server-authoritative):
 
-- Игроки: gold, wood, metal, blueprints, season_points, level
-- Деревни: 8 деревень, owner, defense
-- Сезоны, BattlePass, лидерборд
+- Игроки: gold, wood, metal, level/xp, season_points, best_wave, wins/losses,
+  perks, blueprints, meta-дерево, titles (ранги), revives/builds/boss_kills
+- Деревни: 8 деревень, owner, defense, счётчики сражений, голоса (1 на сезон)
+- Сезоны, BattlePass-награды, лидерборд (топ-20 по season_points)
+- Kill log (кто/что/когда за сколько золота)
 
-Без backend мод работает, но прогресс только внутри забега.
+Без backend мод работает, но прогресс только внутри забега (ошибки HTTP
+логируются и не роняют игру).
 
 ## Для разработчика
 

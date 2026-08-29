@@ -106,6 +106,16 @@ namespace NordInvasion.Behaviors
             State = WaveState.Failed;
             InformationManager.DisplayMessage(new InformationMessage($"{reason} DEFEAT! Swadia fell...", Colors.Red));
             Audio.NISound.PlayDefeat();
+
+            // Сохраняем забег (поражение) для каждого живого игрока
+            var persist = Mission.GetMissionBehavior<PersistenceManager>();
+            if (persist != null && _playerTeam != null)
+            {
+                foreach (var agent in _playerTeam.ActiveAgents)
+                {
+                    if (!IsFallen(agent)) persist.SaveRun(agent, false, WaveNumber);
+                }
+            }
             _endMissionAt = Mission.CurrentTime + 3f;
         }
 
@@ -303,11 +313,14 @@ namespace NordInvasion.Behaviors
             State = WaveState.Completed;
             InformationManager.DisplayMessage(new InformationMessage($"Wave {WaveNumber} COMPLETED!", Colors.Green));
 
-            // Reward alive players +20 gold
+            // Reward alive players +20 gold (+ сохранение в бэкенд)
+            var persist = Mission.GetMissionBehavior<PersistenceManager>();
             foreach (var agent in _playerTeam.ActiveAgents)
             {
                 var comp = agent.GetComponent<PersistenceManager.PlayerGoldComponent>();
                 comp?.AddGold(20);
+                if (!IsFallen(agent))
+                    persist?.OnWaveCompletedFor(agent, WaveNumber, 20, 0, 0);
             }
 
             // Perk choice every 3 waves (Mechanic 1)
@@ -329,6 +342,12 @@ namespace NordInvasion.Behaviors
                 InformationManager.DisplayMessage(new InformationMessage("VICTORY! All 25 waves defeated! Swadia saved!", Colors.Gold));
                 Audio.NISound.PlayVictory();
                 Mission.GetMissionBehavior<PersistenceManager>()?.OnCampaignWin();
+
+                // Сохраняем забег (победа) для каждого игрока
+                var persistWin = Mission.GetMissionBehavior<PersistenceManager>();
+                foreach (var agent in _playerTeam.ActiveAgents)
+                    persistWin?.SaveRun(agent, true, VictoryWave);
+
                 _endMissionAt = Mission.CurrentTime + 5f;
                 return;
             }
@@ -346,6 +365,7 @@ namespace NordInvasion.Behaviors
             Mission.GetMissionBehavior<NordInvasionDirectorBehavior>()?.OnBotKilled();
             Mission.GetMissionBehavior<MoraleBehavior>()?.OnAgentKilled(killed, killer);
 
+            int backendGold = 10;
             // Gold reward + scavenging
             if (killer != null && _playerTeam != null && killer.Team == _playerTeam)
             {
@@ -359,6 +379,7 @@ namespace NordInvasion.Behaviors
                     if (goldComp.HasPerk(22)) gold = (int)(gold * 1.2f);
                     goldComp.AddGold(gold);
                     goldComp.Kills++;
+                    backendGold = gold;
 
                     InformationManager.DisplayMessage(new InformationMessage($"+{gold} gold! Total: {goldComp.Gold}", Colors.Yellow));
 
@@ -386,7 +407,7 @@ namespace NordInvasion.Behaviors
             }
 
             // Backend call (Mechanic 12)
-            Mission.GetMissionBehavior<PersistenceManager>()?.OnKill(killed, killer, WaveNumber);
+            Mission.GetMissionBehavior<PersistenceManager>()?.OnKill(killed, killer, WaveNumber, backendGold);
         }
 
         // Troop getters - load from CharacterObject
