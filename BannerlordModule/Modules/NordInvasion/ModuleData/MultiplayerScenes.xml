@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MultiplayerScenes>
+  <Scene id="mp_ni_bridge_01" name="NI Bridge Fort" />
+  <Scene id="mp_ni_town_01" name="NI Town" />
+  <Scene id="mp_ni_castle_01" name="NI Castle" />
+  <Scene id="mp_ni_forest_01" name="NI Forest" />
+</MultiplayerScenes>

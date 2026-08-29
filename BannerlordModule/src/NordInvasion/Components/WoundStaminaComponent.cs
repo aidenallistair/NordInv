@@ -1,4 +1,5 @@
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.Library;
 
 namespace NordInvasion.Components
 {
@@ -8,6 +9,7 @@ namespace NordInvasion.Components
         public float Stamina = 100f;
         public int FallenCount = 0;
         public bool IsFallen = false;
+        private float _lastHitTime = 0f;
 
         public WoundStaminaComponent(Agent agent) : base(agent) { }
 
@@ -15,23 +17,43 @@ namespace NordInvasion.Components
         {
             Stamina -= 5f;
             if (Stamina < 0) Stamina = 0;
+            _lastHitTime = Mission.CurrentTime;
 
             if (Stamina < 20)
             {
-                // -50% damage
                 Agent.SetMaximumSpeedFactor(0.7f);
+            }
+
+            // Bleed chance from axes
+            if (MBRandom.RandomFloat < 0.15f)
+            {
+                var bleed = Agent.GetComponent<ElementalComponent>();
+                if (bleed == null || bleed.Type != ElementalType.Bleed)
+                    Agent.AddComponent(new ElementalComponent(Agent, ElementalType.Bleed, 5f));
+                else
+                    bleed.AddStack();
             }
         }
 
         public bool TryFall()
         {
+            // Second Wind perk check
+            var perk = Agent.GetComponent<PerkAgentComponent>();
+            if (perk != null && perk.HasPerk(3) && FallenCount == 0)
+            {
+                // Second chance once per wave
+                InformationManager.DisplayMessage(new InformationMessage("Second Wind! Second chance!", Colors.Green));
+                Agent.SetHitPoints(30);
+                return true; // not fallen, just second wind
+            }
+
             if (FallenCount < 3)
             {
                 FallenCount++;
                 IsFallen = true;
                 Agent.SetActionChannel(0, ActionIndexCache.act_fall_down, false, 0, 0, 1f, 1f, 0f, false, -0.2f, 0, true);
-                // Agent becomes invulnerable until revived
-                return true; // fallen, not dead
+                Agent.SetMaximumSpeedFactor(0f);
+                return true; // fallen, not dead - can be revived
             }
             return false; // real death
         }
@@ -40,13 +62,31 @@ namespace NordInvasion.Components
         {
             IsFallen = false;
             Agent.SetHitPoints(50);
+            Agent.SetMaximumSpeedFactor(1f);
             Agent.SetActionChannel(0, ActionIndexCache.act_stand_up, false, 0, 0, 1f, 1f, 0f, false, -0.2f, 0, true);
+            Stamina = 50f;
         }
 
         public override void OnTickAsAI(float dt)
         {
-            // Regen stamina slowly
-            if (Stamina < 100) Stamina += dt * 5f;
+            // Regen stamina slowly if not hit recently
+            if (Mission.CurrentTime - _lastHitTime > 3f && Stamina < 100)
+            {
+                Stamina += dt * 8f;
+                if (Stamina > 100) Stamina = 100;
+                if (Stamina > 20) Agent.SetMaximumSpeedFactor(1f);
+            }
+
+            // Regen perk
+            var perk = Agent.GetComponent<PerkAgentComponent>();
+            if (perk != null && perk.HasPerk(2) && Stamina > 20)
+            {
+                // Regen 2 HP/sec outside combat
+                if (Mission.CurrentTime - _lastHitTime > 5f && Agent.Health < Agent.HealthLimit)
+                {
+                    Agent.SetHitPoints(Agent.Health + (int)(dt * 2f));
+                }
+            }
         }
     }
 
@@ -55,24 +95,58 @@ namespace NordInvasion.Components
         public float DamageMod = 1f;
         public float HpMod = 1f;
         public float BarricadeMod = 1f;
+        public float GoldMod = 1f;
+        public System.Collections.Generic.List<int> Perks = new System.Collections.Generic.List<int>();
 
         public PerkAgentComponent(Agent agent) : base(agent) { }
 
+        public bool HasPerk(int id) => Perks.Contains(id);
+
         public void ApplyPerk(int perkId)
         {
+            if (Perks.Contains(perkId)) return;
+            Perks.Add(perkId);
+
+            var def = Models.PerkDatabase.GetById(perkId);
+            if (def == null) return;
+
+            HpMod += def.HpMod;
+            DamageMod += def.DamageMod;
+            BarricadeMod += def.BarricadeHpMod;
+            GoldMod += def.GoldMod;
+
             switch (perkId)
             {
-                case 0: // Iron Skin
-                    HpMod += 0.15f;
-                    Agent.SetMaximumHitPoints((int)(Agent.HealthLimit * HpMod));
+                case 0: // Iron Skin I
+                case 1: // Iron Skin II
+                    Agent.SetMaximumHitPoints((int)(Agent.HealthLimit * (1f + def.HpMod)));
+                    Agent.SetHitPoints(Agent.HealthLimit);
                     break;
-                case 10: // Bloodlust
-                    DamageMod += 0.1f;
+                case 10: // Bloodlust handled in OnHit
                     break;
-                case 20: // Engineer
-                    BarricadeMod += 0.3f;
+                case 20: // Engineer I
+                case 21: // Engineer II
+                    // BarricadeMod already set
                     break;
             }
+        }
+
+        public float GetDamageWithPerks(float baseDamage)
+        {
+            float dmg = baseDamage * DamageMod;
+
+            // Bloodlust: +10% per 20% lost HP
+            if (HasPerk(10))
+            {
+                float lostPercent = 1f - (Agent.Health / (float)Agent.HealthLimit);
+                int stacks = (int)(lostPercent / 0.2f);
+                dmg *= 1f + stacks * 0.1f;
+            }
+
+            // Executioner: +50% to bosses below 30%
+            // Handled in WaveManager
+
+            return dmg;
         }
     }
 }

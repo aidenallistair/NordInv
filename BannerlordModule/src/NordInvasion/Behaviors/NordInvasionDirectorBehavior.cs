@@ -1,19 +1,25 @@
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
+using System.Linq;
 
 namespace NordInvasion.Behaviors
 {
     // Mechanic 5: AI-Director like Left 4 Dead
     public class NordInvasionDirectorBehavior : MissionBehavior
     {
-        public int Stress = 50; // 0-100, low = team losing, high = team winning
+        public int Stress = 50; // 0-100, low = team losing, high = winning
+        public Agent MarkedPlayer = null; // For Odin mutator
+
+        private float _lastCalcTime = 0f;
 
         public override void OnMissionTick(float dt)
         {
             base.OnMissionTick(dt);
-            // Calculate every second
-            if (Mission.CurrentTime % 1f < 0.1f)
+            if (Mission.CurrentTime - _lastCalcTime > 1f)
+            {
+                _lastCalcTime = Mission.CurrentTime;
                 CalculateStress();
+            }
         }
 
         void CalculateStress()
@@ -22,39 +28,29 @@ namespace NordInvasion.Behaviors
             if (playerTeam == null) return;
 
             int alive = playerTeam.ActiveAgents.Count;
-            int totalPlayers = playerTeam.ActiveAgents.Count + playerTeam.DeathAgents.Count;
+            int total = alive + playerTeam.DeathAgents.Count(a => a != null);
+            total = System.Math.Max(total, 1);
 
-            // If many dead -> stress low (need relief)
-            if (totalPlayers > 0)
-            {
-                float aliveRatio = (float)alive / totalPlayers;
-                if (aliveRatio < 0.3f) Stress -= 2;
-                else if (aliveRatio > 0.8f) Stress += 1;
-            }
-
-            Stress = MathF.Clamp(Stress, 0, 100);
+            float aliveRatio = (float)alive / total;
+            if (aliveRatio < 0.3f) Stress = (int)MathF.Clamp(Stress - 2, 0, 100);
+            else if (aliveRatio > 0.8f) Stress = (int)MathF.Clamp(Stress + 1, 0, 100);
         }
 
-        public void OnBotKilled() => Stress = MathF.Clamp(Stress - 1, 0, 100);
-        public void OnPlayerDied() => Stress = MathF.Clamp(Stress + 2, 0, 100);
-        public void OnWaveCompleted() => Stress = MathF.Clamp(Stress - 5, 0, 100);
+        public void OnBotKilled() => Stress = (int)MathF.Clamp(Stress - 1, 0, 100);
+        public void OnPlayerDied() => Stress = (int)MathF.Clamp(Stress + 3, 0, 100);
+        public void OnWaveCompleted() => Stress = (int)MathF.Clamp(Stress - 5, 0, 100);
 
         public float GetMultiplier()
         {
-            if (Stress > 80) return 1.2f; // team winning, add pressure
-            if (Stress < 30) return 0.8f; // team losing, relief
+            if (Stress > 80) return 1.2f;
+            if (Stress < 30) return 0.8f;
             return 1f;
         }
 
-        public void TryRelief()
+        void TryRelief()
         {
-            if (Stress < 20)
-            {
-                InformationManager.DisplayMessage(new InformationMessage("Director: Relief - Ammo box spawned!", Colors.Yellow));
-                // Spawn ammo box at player base
-                // Mission.GetMissionBehavior<FortressBuildManager>().SpawnAmmoBox();
-                Stress = 30;
-            }
+            InformationManager.DisplayMessage(new InformationMessage("Director: Relief - Ammo box spawned! Stress low", Colors.Yellow));
+            Stress = 30;
         }
     }
 }
