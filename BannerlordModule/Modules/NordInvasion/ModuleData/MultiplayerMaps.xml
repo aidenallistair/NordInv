@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MultiplayerMaps>
+  <Map id="mp_ni_bridge_01" name="NI Bridge Fort - Chokepoint - Best for barricades" outer_terrain="outer_terrain_plain" />
+  <Map id="mp_ni_town_01" name="NI Town - Narrow streets" outer_terrain="outer_terrain_plain" />
+  <Map id="mp_ni_castle_01" name="NI Castle - Gate defense" outer_terrain="outer_terrain_plain" />
+  <Map id="mp_ni_forest_01" name="NI Forest - Ambush" outer_terrain="outer_terrain_forest" />
+</MultiplayerMaps>

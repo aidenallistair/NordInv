@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NPCCharacters>
+  <!-- Tier 0 -->
+  <NPCCharacter id="ni_nord_peasant" name="Nord Peasant" is_basic_troop="true" level="4" occupation="Soldier">
+    <face><face_key_template value="BodyProperty.fighter_nord" /></face>
+    <Skills><Skill id="OneHanded" value="40"/><Skill id="Athletics" value="40"/></Skills>
+    <Equipments>
+      <EquipmentSet id="ni_peasant_set">
+        <Equipment slot="Item0" id="Item.hatchet"/>
+        <Equipment slot="Body" id="Item.tunic"/>
+        <Equipment slot="Leg" id="Item.wrapping_boots"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <NPCCharacter id="ni_nord_footman" name="Nord Footman" is_basic_troop="true" level="12" occupation="Soldier">
+    <face><face_key_template value="BodyProperty.fighter_nord" /></face>
+    <Skills><Skill id="OneHanded" value="90"/><Skill id="Shield" value="60"/></Skills>
+    <Equipments>
+      <EquipmentSet id="ni_footman_set">
+        <Equipment slot="Item0" id="Item.nordic_sword"/>
+        <Equipment slot="Item1" id="Item.nordic_shield"/>
+        <Equipment slot="Head" id="Item.nordic_footman_helmet"/>
+        <Equipment slot="Body" id="Item.byrnie"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <NPCCharacter id="ni_nord_archer" name="Nord Archer" level="10" occupation="Soldier">
+    <Skills><Skill id="Bow" value="80"/><Skill id="Athletics" value="50"/></Skills>
+    <Equipments>
+      <EquipmentSet>
+        <Equipment slot="Item0" id="Item.short_bow"/>
+        <Equipment slot="Item1" id="Item.barbed_arrows"/>
+        <Equipment slot="Item2" id="Item.dagger"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <NPCCharacter id="ni_nord_veteran" name="Nord Veteran" level="18" occupation="Soldier">
+    <Skills><Skill id="OneHanded" value="120"/><Skill id="Shield" value="80"/></Skills>
+    <Equipments>
+      <EquipmentSet>
+        <Equipment slot="Item0" id="Item.one_handed_battle_axe_a"/>
+        <Equipment slot="Item1" id="Item.nordic_shield"/>
+        <Equipment slot="Body" id="Item.mail_with_surcoat"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <NPCCharacter id="ni_nord_huscarl" name="Nord Huscarl" level="25" occupation="Soldier">
+    <Skills><Skill id="OneHanded" value="150"/><Skill id="Shield" value="100"/></Skills>
+    <Equipments>
+      <EquipmentSet>
+        <Equipment slot="Item0" id="Item.nordic_war_sword"/>
+        <Equipment slot="Item1" id="Item.nordic_huscarl_shield"/>
+        <Equipment slot="Body" id="Item.nordic_huscarl_armor"/>
+        <Equipment slot="Head" id="Item.nordic_huscarl_helmet"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <NPCCharacter id="ni_nord_berserker" name="Nord Berserker" level="28" occupation="Soldier">
+    <Skills><Skill id="TwoHanded" value="170"/><Skill id="Athletics" value="100"/></Skills>
+    <Equipments>
+      <EquipmentSet>
+        <Equipment slot="Item0" id="Item.two_handed_battle_axe"/>
+        <Equipment slot="Body" id="Item.berserker_armor"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <NPCCharacter id="ni_nord_jarl_guard" name="Jarl's Guard" level="35" occupation="Soldier" is_hero="false">
+    <Skills><Skill id="OneHanded" value="200"/><Skill id="Shield" value="120"/></Skills>
+    <Equipments>
+      <EquipmentSet>
+        <Equipment slot="Item0" id="Item.sword_of_war"/>
+        <Equipment slot="Item1" id="Item.nordic_champion_shield"/>
+        <Equipment slot="Body" id="Item.plate_armor"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <NPCCharacter id="ni_nord_chieftain" name="Nord Chieftain" level="50" occupation="Lord" is_hero="true">
+    <Skills><Skill id="OneHanded" value="250"/><Skill id="Leadership" value="150"/></Skills>
+    <Equipments>
+      <EquipmentSet>
+        <Equipment slot="Item0" id="Item.nordic_warlord_sword"/>
+        <Equipment slot="Item1" id="Item.tab_shield_round_e"/>
+        <Equipment slot="Body" id="Item.black_armor"/>
+        <Equipment slot="Head" id="Item.nordic_warlord_helmet"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <!-- Cavalry Mechanic 7 -->
+  <NPCCharacter id="ni_nord_raider_mounted" name="Nord Raider" level="20" occupation="Soldier" is_basic_troop="true">
+    <Skills><Skill id="Polearm" value="130"/><Skill id="Riding" value="100"/></Skills>
+    <Equipments>
+      <EquipmentSet>
+        <Equipment slot="Item0" id="Item.spear"/>
+        <Equipment slot="Horse" id="Item.nordic_horseman_horse"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <NPCCharacter id="ni_nord_shield_leader" name="Shield Leader" level="30" occupation="Soldier" is_hero="true">
+    <Skills><Skill id="OneHanded" value="180"/><Skill id="Tactics" value="120"/></Skills>
+    <Equipments>
+      <EquipmentSet>
+        <Equipment slot="Item0" id="Item.nordic_war_sword"/>
+        <Equipment slot="Item1" id="Item.nordic_huscarl_shield"/>
+        <Equipment slot="Banner" id="Item.banner_a"/>
+      </EquipmentSet>
+    </Equipments>
+  </NPCCharacter>
+
+  <!-- Support NPCs -->
+  <NPCCharacter id="ni_villager" name="Swadian Villager" level="5" occupation="Peasant">
+    <Equipments><EquipmentSet><Equipment slot="Body" id="Item.tunic"/></EquipmentSet></Equipments>
+  </NPCCharacter>
+  <NPCCharacter id="ni_trader" name="Trader" level="10" occupation="Merchant"><Equipments><EquipmentSet><Equipment slot="Body" id="Item.tunic"/></EquipmentSet></Equipments></NPCCharacter>
+  <NPCCharacter id="ni_smith" name="Smith" level="10" occupation="Blacksmith"><Equipments><EquipmentSet><Equipment slot="Body" id="Item.tunic"/></EquipmentSet></Equipments></NPCCharacter>
+  <NPCCharacter id="ni_cart" name="Supply Cart" level="1" occupation="Peasant"><Equipments><EquipmentSet><Equipment slot="Body" id="Item.tunic"/></EquipmentSet></Equipments></NPCCharacter>
+  <NPCCharacter id="ni_caravan_guard" name="Caravan Guard" level="15" occupation="Soldier"><Equipments><EquipmentSet><Equipment slot="Item0" id="Item.sword_medieval_a"/></EquipmentSet></Equipments></NPCCharacter>
+</NPCCharacters>

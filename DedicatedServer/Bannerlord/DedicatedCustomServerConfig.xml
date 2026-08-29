@@ -1,0 +1,25 @@
+<DedicatedCustomServerConfig>
+  <GameType>NordInvasion</GameType>
+  <Map>mp_ni_bridge_01</Map>
+  <Maps>
+    <Map>mp_ni_town_01</Map>
+    <Map>mp_ni_castle_01</Map>
+    <Map>mp_ni_bridge_01</Map>
+    <Map>mp_ni_forest_01</Map>
+  </Maps>
+  <Missions>
+    <Mission>mp_nord_invasion</Mission>
+  </Missions>
+  <MaxPlayers>32</MaxPlayers>
+  <Port>7240</Port>
+  <ServerName>Fianna NordInvasion Better Edition [Bannerlord] #1</ServerName>
+  <WelcomeMessage>Welcome to Nord Invasion Better Edition! Build, survive, fight! Press B for Build Menu</WelcomeMessage>
+  <Modules>
+    <Module Id="Native"/>
+    <Module Id="SandBoxCore"/>
+    <Module Id="CustomBattle"/>
+    <Module Id="NordInvasion"/>
+  </Modules>
+  <AdminPassword>fianna_admin_123</AdminPassword>
+  <AddToGameServersList>true</AddToGameServersList>
+</DedicatedCustomServerConfig>

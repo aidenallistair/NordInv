@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Missions>
+  <Mission id="mp_nord_invasion" scene="mp_ni_bridge_01" time_of_day="12" needs_skybox="true">
+    <Behaviors>
+      <Behavior name="NordInvasionWaveManagerBehavior"/>
+      <Behavior name="NordInvasionDirectorBehavior"/>
+      <Behavior name="NordInvasionWeatherBehavior"/>
+      <Behavior name="NordInvasionObjectiveBehavior"/>
+      <Behavior name="NordInvasionMutatorBehavior"/>
+      <Behavior name="FortressBuildManager"/>
+      <Behavior name="ScavengeManager"/>
+      <Behavior name="SquadManager"/>
+      <Behavior name="PersistenceManager"/>
+      <Behavior name="LootManager"/>
+      <Behavior name="CommanderBehavior"/>
+      <Behavior name="MoraleBehavior"/>
+      <Behavior name="CampPhaseBehavior"/>
+      <Behavior name="BossPhaseBehavior"/>
+      <Behavior name="MetaProgressionManager"/>
+      <Behavior name="SpectatorBettingBehavior"/>
+      <Behavior name="LastStandBehavior"/>
+      <Behavior name="SupplyBehavior"/>
+    </Behaviors>
+  </Mission>
+</Missions>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="Русский" />
+  </tags>
+  <strings>
+    <string id="ni_wave" text="Волна" />
+    <string id="ni_nords_left" text="Нордов осталось" />
+    <string id="ni_alive" text="Живых" />
+    <string id="ni_gold" text="Золото" />
+    <string id="ni_wood" text="Дерево" />
+    <string id="ni_metal" text="Металл" />
+    <string id="ni_shop" text="Магазин - F на сундуке" />
+    <string id="ni_build" text="Стройка - B" />
+    <string id="ni_perk_choice" text="Выбери перк!" />
+    <string id="ni_mutator_thor" text="Ярость Тора - все берсерки!" />
+    <string id="ni_mutator_loki" text="Жадность Локи - золото x2 но крадет при ударе" />
+    <string id="ni_mutator_odin" text="Метка Одина - все боты бегут на помеченного" />
+    <string id="ni_objective_kill" text="Убей всех нордов" />
+    <string id="ni_objective_ram" text="Уничтожь таран! 2000 HP" />
+    <string id="ni_objective_escort" text="Сопроводи крестьянина" />
+    <string id="ni_objective_burn" text="Сожги 3 лагеря нордов факелом" />
+    <string id="ni_fallen" text="Упал! Медик может поднять! Удержи F 5 сек" />
+    <string id="ni_last_stand" text="ПОСЛЕДНИЙ РУБЕЖ! 10 сек слоу-мо! Подними союзника!" />
+    <string id="ni_camp_phase" text="ФАЗА ЛАГЕРЯ! 90 сек - торговец, кузнец, костер" />
+    <string id="ni_caravan" text="КАРАВАН с припасами! Защити от засады! +20 дерева +10 металла" />
+    <string id="ni_loot_bag" text="Мешок с золотом босса! Донеси до казны! Скорость -30%" />
+    <string id="ni_commander" text="Командир ставит маркеры! Выполни приказ +10% XP" />
+    <string id="ni_morale_low" text="Мораль низкая! Отряд паникует и бежит!" />
+    <string id="ni_boss_phase2" text="БОСС Фаза 2! Призывает миньонов!" />
+    <string id="ni_boss_phase3" text="БОСС Фаза 3! Берсерк! Огонь вокруг!" />
+  </strings>
+</base>

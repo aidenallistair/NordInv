@@ -1,0 +1,36 @@
+<Module>
+    <Name value="Nord Invasion Better Edition"/>
+    <Id value="NordInvasion"/>
+    <Version value="v2.0.0"/>
+    <SingleplayerModule value="true"/>
+    <MultiplayerModule value="true"/>
+    <DependedModules>
+        <DependedModule Id="Native"/>
+        <DependedModule Id="SandBoxCore"/>
+        <DependedModule Id="Sandbox"/>
+        <DependedModule Id="CustomBattle"/>
+        <DependedModule Id="StoryMode" DependentVersion="e1.2.10" Optional="true"/>
+        <DependedModule Id="ButterLib" DependentVersion="2.8.11" Optional="false"/>
+        <DependedModule Id="UIExtenderEx" DependentVersion="2.8.0" Optional="false"/>
+        <DependedModule Id="ModConfigurationMenuv5" DependentVersion="5.9.0" Optional="false"/>
+    </DependedModules>
+    <SubModules>
+        <SubModule>
+            <Name value="NordInvasion"/>
+            <DLLName value="NordInvasion.dll"/>
+            <SubModuleClassType value="NordInvasion.SubModule"/>
+            <Tags>
+                <Tag key="DedicatedServerType" value="none" />
+                <Tag key="IsNoRenderOnlyAIs" value="false" />
+            </Tags>
+        </SubModule>
+    </SubModules>
+    <Xmls>
+        <XmlNode>
+            <XmlName id="MultiplayerScenes" path="ModuleData/MultiplayerScenes.xml"/>
+        </XmlNode>
+        <XmlNode>
+            <XmlName id="MultiplayerMaps" path="ModuleData/MultiplayerMaps.xml"/>
+        </XmlNode>
+    </Xmls>
+</Module>

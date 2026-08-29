@@ -1,0 +1,231 @@
+# Инструкция по запуску Nord Invasion Bannerlord
+
+## Для игрока (самый простой)
+
+### Требования:
+- Mount & Blade II: Bannerlord 1.2.10+ (Steam)
+- 8GB RAM, 4 ядра
+
+### Установка:
+
+1. Скачай зависимости с NexusMods:
+   - ButterLib https://www.nexusmods.com/mountandblade2bannerlord/mods/201
+   - UIExtenderEx https://www.nexusmods.com/mountandblade2bannerlord/mods/210
+   - Mod Configuration Menu v5 https://www.nexusmods.com/mountandblade2bannerlord/mods/612
+
+2. Скачай NordInvasion Better Edition (релиз zip)
+
+3. Распакуй в:
+   ```
+   C:\Program Files (x86)\Steam\steamapps\common\Mount & Blade II Bannerlord\Modules\NordInvasion\
+   ```
+   Должно быть:
+   ```
+   Modules/NordInvasion/
+     SubModule.xml
+     bin/Win64_Shipping_Client/NordInvasion.dll
+     ModuleData/
+   ```
+
+4. Запусти `Bannerlord Launcher`, включи галочки:
+   - ButterLib
+   - UIExtenderEx
+   - ModConfigurationMenu v5
+   - NordInvasion
+
+5. Запусти игру -> Custom Battle -> 
+   - Map: `mp_ni_bridge_01` (или town/castle/forest)
+   - Mission: `mp_nord_invasion`
+   - Start!
+
+6. Управление:
+   - B - Build Menu (стройка)
+   - N - Shop (магазин)
+   - M - Medic/Engineer действия
+   - R - Commander (если ты командир)
+   - L - Supply info
+   - F - Use (подобрать лут, починить, поджечь)
+
+## Для Co-op с друзьями (4-8 игроков)
+
+### Требования:
+- Мод Bannerlord Co-op https://www.nexusmods.com/mountandblade2bannerlord/mods/1080
+
+### Установка:
+
+1. Установи Bannerlord Co-op мод (по инструкции с Nexus)
+
+2. Установи NordInvasion как выше
+
+3. Host:
+   - Запусти Bannerlord через Co-op Launcher
+   - Co-op -> Host Game -> Custom Battle -> mp_ni_bridge_01
+   - Пригласи друзей через Steam
+
+4. Client:
+   - Co-op -> Join Game -> IP друга
+
+Все 29 механик работают в коопе.
+
+## Для Dedicated Server 32 игрока
+
+### Требования:
+- Windows 10/Server или Linux с Wine
+- 4 ядра, 8GB RAM, 10 Mbps upload
+
+### Установка сервера:
+
+#### Windows:
+
+1. Скачай Dedicated Server через SteamCMD:
+   ```bat
+   steamcmd.exe +login anonymous +app_update 1058080 validate +quit
+   ```
+   Путь: `C:\steamcmd\steamapps\common\Mount & Blade II Dedicated Server\`
+
+2. Скопируй модуль:
+   ```
+   xcopy /E /I Modules\NordInvasion "C:\steamcmd\...\Dedicated Server\Modules\NordInvasion"
+   ```
+
+3. Скопируй конфиг:
+   ```
+   copy DedicatedServer\Bannerlord\DedicatedCustomServerConfig.xml "C:\...\Dedicated Server\"
+   ```
+
+4. Отредактируй конфиг - поменяй `ServerName`, `MaxPlayers`, `Port`
+
+5. Запусти:
+   ```bat
+   DedicatedServer\Bannerlord\start_bannerlord_server.bat
+   ```
+   Должно написать:
+   ```
+   Dedicated Server started on port 7240
+   Nord Invasion Better Edition v2.0 Loaded!
+   ```
+
+6. Открой порт 7240 UDP в файрволе и роутере (Port Forwarding)
+
+#### Linux:
+
+```bash
+sudo apt install steamcmd wine64
+steamcmd +login anonymous +app_update 1058080 validate +quit
+cd "~/.steam/steam/steamapps/common/Mount & Blade II Dedicated Server"
+cp -r ~/NordInv/BannerlordModule/Modules/NordInvasion Modules/
+wine bin/Win64_Shipping_Client/TaleWorlds.MountAndBlade.DedicatedCustomServer.exe /dedicatedcustomserverconfig ../../NordInv/DedicatedServer/Bannerlord/DedicatedCustomServerConfig.xml
+```
+
+### Подключение игроков к Dedicated:
+
+- В Bannerlord: Multiplayer -> Add Server to Favorites -> IP:7240
+- Или прямое подключение: консоль `connect_to_server IP 7240`
+
+## Для Backend (персистенция, кампания, сезоны)
+
+### Требования:
+- Python 3.11+
+- FastAPI
+
+### Установка:
+
+```bash
+cd src/backend
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Открой http://localhost:8000/docs - Swagger UI
+
+### Настройка в моде:
+
+В `BannerlordModule/src/NordInvasion/Managers/PersistenceManager.cs`:
+
+```csharp
+private string _backendUrl = "http://YOUR_SERVER_IP:8000";
+```
+
+Скомпилируй заново.
+
+### Что хранит backend:
+
+- Игроки: gold, wood, metal, blueprints, season_points, level
+- Деревни: 8 деревень, owner, defense
+- Сезоны, BattlePass, лидерборд
+
+Без backend мод работает, но прогресс только внутри забега.
+
+## Для разработчика
+
+### Компиляция:
+
+1. Открой `BannerlordModule/NordInvasion.csproj` в Rider/VS
+
+2. Пропиши пути к Bannerlord DLL:
+   ```xml
+   <HintPath>C:\...\Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Core.dll</HintPath>
+   ```
+
+3. Build -> `Modules/NordInvasion/bin/Win64_Shipping_Client/NordInvasion.dll`
+
+4. Копируй в игру:
+   ```bat
+   xcopy /Y BannerlordModule\Modules\NordInvasion\bin\Win64_Shipping_Client\NordInvasion.dll "C:\...\Bannerlord\Modules\NordInvasion\bin\Win64_Shipping_Client\"
+   ```
+
+### Создание карты:
+
+1. Установи Modding Kit (Steam Tools)
+
+2. Запусти `Editor` -> New Scene -> Terrain plain
+
+3. Place -> Entry Points:
+   - 0-31 в форте (игроки)
+   - 32-63 вокруг (норды)
+   - 64 босс
+
+4. Place -> Scene Props:
+   - `ni_armory_chest`, `ni_brazier`, `ni_foundation_wood`, `ni_stakes`, `ballista`, `rock_trap`
+
+5. Save as `mp_ni_yourmap`, скопируй `scene.xscene` + `scene_*.xml` в `ModuleData/Scenes/`
+
+6. Добавь в `ModuleData/MultiplayerScenes.xml` и `MultiplayerMaps.xml`
+
+### Тестирование:
+
+- 1 игрок: Custom Battle 1 волна 10 ботов - работает?
+- Роли: умри -> Fallen -> медик поднимает?
+- Форт: B -> Foundation 5 wood -> Wall?
+- Кавалерия: волна 10 -> колья убивают лошадь?
+- Лут: убей босса -> мешок -> донеси до казны?
+- Last Stand: 1 живой vs 1 норд -> слоу-мо?
+- Снабжение: караван каждые 3 волны?
+
+## Частые проблемы
+
+**Мод не загружается:**
+- Проверь `rgl_log.txt` в `Documents/Mount and Blade II Bannerlord/Logs/`
+- Убедись что ButterLib, UIExtenderEx, MCMv5 включены и нужной версии
+
+**Боты не спавнятся:**
+- Проверь entry points в сцене, должны быть 32-64
+- Проверь Characters.xml - troop id должны совпадать
+
+**Баррикады не ставятся:**
+- Проверь wood/metal в `PlayerGoldComponent`, нужно 5 wood для foundation
+- Raycast на землю - ставь на ровной поверхности
+
+**Backend не подключается:**
+- Проверь что `uvicorn` запущен на 0.0.0.0:8000
+- Проверь файрвол, открой 8000 TCP
+- В моде `_backendUrl` должен быть доступный IP, не localhost если сервер на другой машине
+
+**Dedicated Server крашится:**
+- Проверь что все 4 зависимости (Native, SandBoxCore, CustomBattle, NordInvasion) в Modules/
+- Проверь `DedicatedCustomServerConfig.xml` - все теги закрыты?
+- Запусти с логами: `DedicatedCustomServer.exe /dedicatedcustomserverconfig config.xml /log`
+
+## Готово!
+
+Теперь ты можешь играть в Nord Invasion Better Edition на Bannerlord с 29 механиками.
