@@ -1,14 +1,16 @@
 <Module>
     <Name value="Nord Invasion Better Edition"/>
     <Id value="NordInvasion"/>
-    <Version value="v2.1.0"/>
+    <Version value="v2.2.0"/>
     <SingleplayerModule value="true"/>
     <MultiplayerModule value="true"/>
+    <ModuleCategory value="Multiplayer"/>
     <DependedModules>
         <DependedModule Id="Native"/>
         <DependedModule Id="SandBoxCore"/>
         <DependedModule Id="Sandbox"/>
         <DependedModule Id="CustomBattle"/>
+        <DependedModule Id="Multiplayer" DependentVersion="e1.2.10" Optional="false"/>
         <DependedModule Id="StoryMode" DependentVersion="e1.2.10" Optional="true"/>
         <DependedModule Id="ButterLib" DependentVersion="2.8.11" Optional="false"/>
         <DependedModule Id="UIExtenderEx" DependentVersion="2.8.0" Optional="false"/>
@@ -20,7 +22,8 @@
             <DLLName value="NordInvasion.dll"/>
             <SubModuleClassType value="NordInvasion.SubModule"/>
             <Tags>
-                <Tag key="DedicatedServerType" value="none" />
+                <!-- Для DedicatedCustomServer: Battle = сервер рендерит только AI, IsNoRenderOnlyAIs false = с рендером -->
+                <Tag key="DedicatedServerType" value="Battle" />
                 <Tag key="IsNoRenderOnlyAIs" value="false" />
             </Tags>
         </SubModule>

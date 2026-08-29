@@ -1,9 +1,32 @@
-# Nord Invasion Better Edition v2.1.0
+# Nord Invasion Better Edition v2.2.0
 
 
 Кооперативный PvE мод для Mount & Blade II: Bannerlord (1.2.10+).
 Команда 4-32 игроков держит форт против 25 волн нордов.
+С 2.2.0 основной путь — встроенный Dedicated MP (GameType NordInvasion), как у Full Invasion 3.
 
+## v2.2.0 — встроенный мультиплеер вместо Co-op мода (2026-08-29)
+
+**Проблема:** Co-op моды (Bannerlord Coop / Together) синхронизируют всю кампанию через Harmony → десинки, краши каждый патч, 4-8 игроков максимум.
+**Решение:** Переход на официальный DedicatedCustomServer с кастомным GameType `NordInvasion` (как FI3).
+
+**Новое:**
+- `SubModule.xml`: `ModuleCategory=Multiplayer`, `DedicatedServerType=Battle`, зависимость `Multiplayer`, версия 2.2.0
+- `SubModule.cs`: `AddMultiplayerGameMode(new NordInvasionGameMode("NordInvasion"))` + загрузка `multiplayer_strings.xml`
+- `ModuleData/multiplayer_strings.xml`: имя режима в браузере серверов
+- `DedicatedCustomServerConfig.xml`: `GameType=NordInvasion` (был Multiplayer), добавлен `Multiplayer` модуль
+- `Multiplayer/` (6 файлов, 800+ строк):
+  - `NordInvasionGameMode.cs` — регистрация режима, StartMultiplayerGame для client/server (SpawnComponent, Scoreboard, Timer, Lobby...)
+  - `MissionMultiplayerNordInvasion.cs` — сервер: команды Defender/Attacker, WaveManager, золото через Representative, CheckForMatchEnd, GetWinnerTeam, обработка RequestBuildMessage
+  - `MissionMultiplayerNordInvasionClient.cs` — клиент: HUD, обработка BuildPlacedMessage/GoldSync/WaveState
+  - `NIMissionRepresentative.cs` — хранение золота/wood/metal/kills на сервере
+  - `NISpawnBehaviors.cs` — entry points 0-31 игроки, 32-64 норды, респавн 10 сек, ScoreboardData
+  - `NINetworkMessages.cs` — RequestBuildMessage, BuildPlacedMessage, GoldSync, WaveState (Integer компрессия, без зависимости от CompressionBasic полей)
+- `FortressBuildManager`: `TryPlace` теперь на клиенте шлёт `RequestBuildMessage`, на сервере — `TryPlaceMP` + broadcast `BuildPlacedMessage`; `Place` тоже бродкастит
+- `tools/validate_module.py`: разрешён GameType NordInvasion, игнорируется multiplayer_strings.xml (грузится вручную)
+- Доки: `docs/MULTIPLAYER_ANALYSIS_RU.md` (анализ Co-op vs Dedicated, таблица, архитектура, план), обновлены README и LAUNCH_GUIDE (Dedicated теперь основной, Co-op — fallback)
+
+**Совместимость:** Custom Battle (singleplayer) и Co-op путь сохранены, новый MP — дополнительно.
 
 ## v2.1.0 — экономика и проверка без игры (2026-08-29)
 

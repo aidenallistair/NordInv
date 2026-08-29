@@ -38,7 +38,11 @@ moddata_files = {
     os.path.relpath(f, os.path.join(MOD, "ModuleData")).replace(os.sep, "/")
     for f in glob.glob(os.path.join(MOD, "ModuleData", "*.xml"))
 }
+# multiplayer_strings.xml грузится вручную через GameTextManager.LoadGameTexts, а не через Xmls
+ignore_xml = {"multiplayer_strings.xml"}
 for f in sorted(moddata_files):
+    if f in ignore_xml:
+        continue
     if f not in registered:
         err(f"SubModule.xml не регистрирует ModuleData/{f}")
 
@@ -118,8 +122,9 @@ dsc = os.path.join(REPO_ROOT, "DedicatedServer", "Bannerlord", "DedicatedCustomS
 try:
     root = ET.parse(dsc).getroot()
     gt = root.findtext("GameType")
-    if gt != "Multiplayer":
-        err(f"DedicatedCustomServerConfig.xml: GameType должен быть Multiplayer (сейчас {gt})")
+    # Допустимые GameType: Multiplayer (старый) или NordInvasion (новый кастомный режим, как FI3)
+    if gt not in ("Multiplayer", "NordInvasion"):
+        err(f"DedicatedCustomServerConfig.xml: GameType должен быть NordInvasion или Multiplayer (сейчас {gt})")
     for m in root.findall(".//Modules/Module"):
         if m.get("Id") == "NordInvasion":
             break
