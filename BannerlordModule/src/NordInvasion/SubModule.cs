@@ -17,6 +17,21 @@ namespace NordInvasion
             Instance = this;
             base.OnSubModuleLoad();
             NISettings.Instance.LoadFromEnvironment();
+
+            // Регистрируем кастомный MP режим NordInvasion для DedicatedCustomServer
+            // GameType в DedicatedCustomServerConfig.xml должен быть "NordInvasion"
+            // Это основной стабильный путь (как Full Invasion 3), в отличие от Co-op мода
+            try
+            {
+                Module.CurrentModule.AddMultiplayerGameMode(new Multiplayer.NordInvasionGameMode("NordInvasion"));
+                InformationManager.DisplayMessage(new InformationMessage("Nord Invasion MP GameType 'NordInvasion' registered (Dedicated Server)", Colors.Green));
+            }
+            catch (Exception ex)
+            {
+                // На клиенте без Multiplayer модуля или в старых версиях - не критично
+                System.Diagnostics.Debug.WriteLine("Failed to register MP GameMode: " + ex.Message);
+            }
+
             InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.1 - 29 mechanics Loaded!", Colors.Green));
         }
 
@@ -28,6 +43,15 @@ namespace NordInvasion
                 var campaignStarter = (CampaignGameStarter)gameStarterObject;
                 campaignStarter.AddBehavior(new NordInvasionCampaignBehavior());
             }
+
+            // Загружаем строки для MP режима (имя режима в браузере серверов)
+            try
+            {
+                // ModuleHelper доступен в TaleWorlds.MountAndBlade
+                string modulePath = TaleWorlds.MountAndBlade.ModuleHelper.GetModuleFullPath("NordInvasion");
+                game.GameTextManager.LoadGameTexts(modulePath + "ModuleData/multiplayer_strings.xml");
+            }
+            catch { }
         }
 
         public override void OnMissionBehaviorInitialize(Mission mission)

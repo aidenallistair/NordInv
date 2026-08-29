@@ -46,7 +46,90 @@
    - L - Supply info
    - F - Use (подобрать лут, починить, поджечь)
 
-## Для Co-op с друзьями (4-8 игроков)
+## Для Dedicated Server 32 игрока (рекомендуемый, стабильный путь)
+
+> **С 2.2.0 основной путь — встроенный DedicatedCustomServer с GameType `NordInvasion`, как у Full Invasion 3.**
+> Co-op мод остаётся как fallback для 2-4 друзей без выделенного сервера.
+> Подробное сравнение: `docs/MULTIPLAYER_ANALYSIS_RU.md`
+
+### Почему Dedicated лучше Co-op
+
+- Co-op моды (Bannerlord Coop / Together) синхронизируют всю кампанию через Harmony-патчи → десинки, краши каждый патч
+- DedicatedCustomServer — официальный неткод TaleWorlds (UDP 7210, лаг-компенсация, анти-чит), 32-120 игроков, как FI3
+- Стройка и золото — сервер-авторитетно через `NIMissionRepresentative` и кастомные `GameNetworkMessage`
+
+### Требования:
+- Windows 10/Server или Linux с Wine
+- 4 ядра, 8GB RAM, 10 Mbps upload
+
+### Установка сервера:
+
+#### Windows:
+
+1. Скачай Dedicated Server через SteamCMD:
+   ```bat
+   steamcmd.exe +login anonymous +app_update 1058080 validate +quit
+   ```
+   Путь: `C:\steamcmd\steamapps\common\Mount & Blade II Dedicated Server\`
+
+2. Сгенерируй токен (один раз, действует 3 месяца):
+   - Запусти Bannerlord Multiplayer -> лобби -> консоль Alt+~ -> `customserver.gettoken`
+   - Файл появится в `Documents\Mount & Blade II Bannerlord\Tokens\`
+   - Скопируй на сервер если хостишь на другой машине
+
+3. Скопируй модуль:
+   ```
+   xcopy /E /I Modules\NordInvasion "C:\steamcmd\...\Dedicated Server\Modules\NordInvasion"
+   ```
+
+4. Скопируй конфиг:
+   ```
+   copy DedicatedServer\Bannerlord\DedicatedCustomServerConfig.xml "C:\...\Dedicated Server\Modules\Native\ds_config_nordinvasion.txt"
+   ```
+   В конфиге уже `GameType=NordInvasion` (регистрируется в `SubModule.cs` через `AddMultiplayerGameMode`)
+
+5. Запусти:
+   ```bat
+   DedicatedServer\Bannerlord\start_bannerlord_server.bat
+   # или
+   bin\Win64_Shipping_Server\DedicatedCustomServer.Starter.exe _MODULES_*Native*Multiplayer*NordInvasion*_MODULES_ /dedicatedcustomserverconfigfile ds_config_nordinvasion.txt
+   ```
+   Должно написать:
+   ```
+   Dedicated Server started on port 7240
+   Nord Invasion MP GameType 'NordInvasion' registered
+   ```
+
+6. Открой порт 7240 UDP в файрволе и роутере (Port Forwarding) + 7210 TCP для web-панели
+
+#### Linux:
+
+```bash
+sudo apt install steamcmd wine64
+steamcmd +login anonymous +app_update 1058080 validate +quit
+cd "~/.steam/steam/steamapps/common/Mount & Blade II Dedicated Server"
+cp -r ~/NordInv/BannerlordModule/Modules/NordInvasion Modules/
+# токен из Documents/Mount & Blade II Bannerlord/Tokens/ скопировать в ~/.steam/...
+wine bin/Win64_Shipping_Client/TaleWorlds.MountAndBlade.DedicatedCustomServer.exe _MODULES_*Native*Multiplayer*NordInvasion*_MODULES_ /dedicatedcustomserverconfigfile ../../NordInv/DedicatedServer/Bannerlord/DedicatedCustomServerConfig.xml
+```
+
+### Подключение игроков к Dedicated:
+
+- В Bannerlord: Multiplayer -> Custom Servers -> найти `Fianna NordInvasion` (фильтр GameType NordInvasion)
+- Или Direct IP: `connect_to_server IP 7240` в консоли
+- Мод NordInvasion должен быть включён в лаунчере (ModuleCategory=Multiplayer)
+
+### Что внутри MP режима (2.2.0)
+
+- `BannerlordModule/src/NordInvasion/Multiplayer/NordInvasionGameMode.cs` — регистрация `GameType=NordInvasion`
+- `MissionMultiplayerNordInvasion` — сервер: команды Defender/Attacker, WaveManager, золото через `NIMissionRepresentative`
+- `MissionMultiplayerNordInvasionClient` — клиент: HUD, обработка `BuildPlacedMessage`
+- `NINetworkMessages.cs` — `RequestBuildMessage` (клиент->сервер), `BuildPlacedMessage` (сервер->все)
+- `FortressBuildManager.TryPlaceMP` — сервер-авторитетная стройка + broadcast
+
+## Для Co-op с друзьями (4-8 игроков, fallback, менее стабильно)
+
+> Co-op моды нестабильны — см. `docs/MULTIPLAYER_ANALYSIS_RU.md`. Используй только если нет возможности поднять Dedicated.
 
 ### Требования:
 - Мод Bannerlord Co-op https://www.nexusmods.com/mountandblade2bannerlord/mods/1080
@@ -65,62 +148,7 @@
 4. Client:
    - Co-op -> Join Game -> IP друга
 
-Все 29 механик работают в коопе.
-
-## Для Dedicated Server 32 игрока
-
-### Требования:
-- Windows 10/Server или Linux с Wine
-- 4 ядра, 8GB RAM, 10 Mbps upload
-
-### Установка сервера:
-
-#### Windows:
-
-1. Скачай Dedicated Server через SteamCMD:
-   ```bat
-   steamcmd.exe +login anonymous +app_update 1058080 validate +quit
-   ```
-   Путь: `C:\steamcmd\steamapps\common\Mount & Blade II Dedicated Server\`
-
-2. Скопируй модуль:
-   ```
-   xcopy /E /I Modules\NordInvasion "C:\steamcmd\...\Dedicated Server\Modules\NordInvasion"
-   ```
-
-3. Скопируй конфиг:
-   ```
-   copy DedicatedServer\Bannerlord\DedicatedCustomServerConfig.xml "C:\...\Dedicated Server\"
-   ```
-
-4. Отредактируй конфиг - поменяй `ServerName`, `MaxPlayers`, `Port`
-
-5. Запусти:
-   ```bat
-   DedicatedServer\Bannerlord\start_bannerlord_server.bat
-   ```
-   Должно написать:
-   ```
-   Dedicated Server started on port 7240
-   Nord Invasion Better Edition v2.0 Loaded!
-   ```
-
-6. Открой порт 7240 UDP в файрволе и роутере (Port Forwarding)
-
-#### Linux:
-
-```bash
-sudo apt install steamcmd wine64
-steamcmd +login anonymous +app_update 1058080 validate +quit
-cd "~/.steam/steam/steamapps/common/Mount & Blade II Dedicated Server"
-cp -r ~/NordInv/BannerlordModule/Modules/NordInvasion Modules/
-wine bin/Win64_Shipping_Client/TaleWorlds.MountAndBlade.DedicatedCustomServer.exe /dedicatedcustomserverconfig ../../NordInv/DedicatedServer/Bannerlord/DedicatedCustomServerConfig.xml
-```
-
-### Подключение игроков к Dedicated:
-
-- В Bannerlord: Multiplayer -> Add Server to Favorites -> IP:7240
-- Или прямое подключение: консоль `connect_to_server IP 7240`
+Все 29 механик работают в коопе, но возможны десинки.
 
 ## Для Backend (персистенция, кампания, сезоны)
 

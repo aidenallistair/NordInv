@@ -1,6 +1,8 @@
 <DedicatedCustomServerConfig>
+  <!-- Основной стабильный путь для NI - встроенный DedicatedCustomServer с GameType NordInvasion -->
+  <!-- Как у Full Invasion 3: сервер хостит кастомный MP режим, а не кампанию через Co-op мод -->
   <ServerName>Fianna NordInvasion Better Edition [Bannerlord] #1</ServerName>
-  <GameType>Multiplayer</GameType>
+  <GameType>NordInvasion</GameType>
   <Map>mp_ni_bridge_01</Map>
   <Maps>
     <Map>mp_ni_town_01</Map>
@@ -10,14 +12,19 @@
   </Maps>
   <MaxPlayers>32</MaxPlayers>
   <Port>7240</Port>
-  <WelcomeMessage>Welcome to Nord Invasion Better Edition! Build, survive, fight! Press B for Build Menu</WelcomeMessage>
+  <WelcomeMessage>Welcome to Nord Invasion Better Edition! Build, survive, fight! Press B for Build Menu | Gold &amp; progress saved via backend</WelcomeMessage>
   <Modules>
     <Module Id="Native"/>
     <Module Id="SandBoxCore"/>
     <Module Id="CustomBattle"/>
+    <Module Id="Multiplayer"/>
     <Module Id="NordInvasion"/>
   </Modules>
   <AdminPassword>fianna_admin_123</AdminPassword>
   <AddToGameServersList>true</AddToGameServersList>
   <IsNoRenderOnlyAIs>false</IsNoRenderOnlyAIs>
+  <!-- Для автопереключения карт: -->
+  <!-- <EnableAutomatedBattleSwitching>true</EnableAutomatedBattleSwitching> -->
+  <!-- <AutomatedBattleCount>-1</AutomatedBattleCount> -->
 </DedicatedCustomServerConfig>
+

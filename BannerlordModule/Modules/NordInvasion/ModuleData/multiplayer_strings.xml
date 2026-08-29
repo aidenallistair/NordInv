@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <strings>
+    <string id="str_multiplayer_official_game_type_name.NordInvasion" text="{=*}Nord Invasion" />
+    <string id="str_multiplayer_game_type.NordInvasion" text="{=*}Nord Invasion - Defend Swadia" />
+    <string id="str_multiplayer_official_game_type_desc.NordInvasion" text="{=*}Co-op PvE: 4-32 players defend fort against waves of Nords. Build, scavenge, survive 25 waves!" />
+  </strings>
+</base>

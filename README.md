@@ -43,19 +43,39 @@ docs/BANNERLORD_PLAN_RU.md - полный план реализации 15 ме�
 4. Открой `BannerlordModule/NordInvasion.csproj` в Rider/VS, пропиши пути к TaleWorlds.*.dll
 5. Скомпилируй -> `Modules/NordInvasion/bin/Win64_Shipping_Client/NordInvasion.dll`
 6. В лаунчере включи NordInvasion
-7. Custom Battle -> Scene `mp_ni_bridge_01` -> Mission `mp_nord_invasion` или через Co-op мод
+7. **Dedicated MP (рекомендуемый, стабильный):** Multiplayer -> Custom Servers -> `NordInvasion` на `mp_ni_bridge_01` (см. ниже)
+8. **Singleplayer тест:** Custom Battle -> Scene `mp_ni_bridge_01` -> Mission `mp_nord_invasion`
+9. **Co-op мод (fallback, нестабильный):** через Bannerlord Co-op мод (см. `docs/MULTIPLAYER_ANALYSIS_RU.md`)
 
-## Dedicated Server
+## Dedicated Server (основной путь, как Full Invasion 3)
+
+Встроенный мультиплеер Bannerlord стабильнее Co-op мода: официальный неткод, 32-120 игроков, токен-авторизация.
 
 ```bash
 # Скачать сервер через SteamCMD
 steamcmd +login anonymous +app_update 1058080 validate +quit
 
-# Запуск
-TaleWorlds.MountAndBlade.DedicatedCustomServer.exe /dedicatedcustomserverconfig DedicatedServer/Bannerlord/DedicatedCustomServerConfig.xml
+# Сгенерировать токен (один раз, действует 3 месяца):
+# 1. Запусти Bannerlord Multiplayer -> лобби -> консоль Alt+~ -> customserver.gettoken
+# 2. Токен в Documents/Mount & Blade II Bannerlord/Tokens/
+
+# Запуск (GameType=NordInvasion - наш кастомный режим)
+TaleWorlds.MountAndBlade.DedicatedCustomServer.exe _MODULES_*Native*Multiplayer*NordInvasion*_MODULES_ /dedicatedcustomserverconfig DedicatedServer/Bannerlord/DedicatedCustomServerConfig.xml
+
+# Или через скрипт
+./DedicatedServer/Bannerlord/start_bannerlord_server.sh
 ```
 
-Подробнее в `DedicatedServer/Bannerlord/README.md`
+Конфиг `DedicatedCustomServerConfig.xml` уже настроен:
+- `GameType=NordInvasion` (регистрируется в `SubModule.cs` через `AddMultiplayerGameMode`)
+- 4 карты `mp_ni_*`, 32 игрока, порт 7240
+
+Подробнее:
+- `DedicatedServer/Bannerlord/README.md` — установка сервера
+- `docs/MULTIPLAYER_ANALYSIS_RU.md` — сравнение Co-op vs Dedicated MP, почему выбрали встроенный MP
+- `BannerlordModule/src/NordInvasion/Multiplayer/` — реализация `MissionMultiplayerNordInvasion` (server/client), `NIMissionRepresentative`, сетевые сообщения стройки
+
+Co-op мод остаётся как опция для 2-4 друзей без выделенного сервера, но основной путь — Dedicated.
 
 ## Backend (персистенция, кампания, сезоны)
 
