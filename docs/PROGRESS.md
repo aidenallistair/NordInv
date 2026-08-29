@@ -89,11 +89,15 @@
       ( Characters/Items/Missions/SceneProps не грузились); MathF (нет в net472);
       небезопасные API (Peer.Communicator, SetActionChannel, rotation.f, SetTeam);
       csproj: System.Net.Http; killcam double-call; экономика строительства
+- [ ] **UIExtender + подключение экранов** (главный функциональный гейт после session 4):
+      без него `NI_Shop_VM`/`NI_BuildMenu_VM`/`NI_PerkChoice_VM`/`NI_CampaignMap_VM`
+      не выведены на экран, т.е. стройка форта (механики 2/18/23) игроку недоступна.
+      Порядок и проверочный debug-хук - docs/VERIFICATION.md, шаг 5.0
 - [ ] Бинарный террейн сцен (terrain.bin) - `prepare_scenes.py` на машине с игрой
       или сохранение в Scene Editor (5 минут на сцену)
 - [ ] Иконки перков - mesh + material (docs/ART_TASKS.md; VM/слоты готовы, session 4)
 - [ ] Мешы ni_*-пропсов (docs/ART_TASKS.md; vanilla-fallback, session 4 добавил
-      фоллбеки для осадных/ловушек, ящика оружейной и тотемов перков)
+      фоллбеки для осадных/ловушек и ящика оружейной; тотемы перков используют ni_brazier)
 - [ ] Тест Dedicated Server 2 клиента (нужен SteamCMD/Windows)
 - [ ] Загрузка на NexusMods (нужен аккаунт + dll)
 
@@ -260,6 +264,12 @@ battlepass claim, сброс сезона.
   `LoadSceneProp`, `Formation.Captain`) по-прежнему проверяются только сборкой.
 - Gauntlet-префабы NI_* не подключены к пайплайну экранов: VM'ы и каталог готовы,
   синтаксис `Command.*` в XML надо сверить с нативным префабом в игре.
+
+**Найдено при подготовке инструкции по проверкам** (`docs/VERIFICATION.md`): UIExtender в
+проекте нет ни одного, поэтому VM'ы не выведены на экраны и **стройка форта (механики
+2/18/23) игроку недоступна** - `TryPlace` дёргается только из `NI_BuildMenu_VM`.
+Магазин частично закрыт F-ящиком, перки - F-тотемами; остальное требует либо
+UIExtender-миксинов, либо проверочного поведения (шаг 5.0 инструкции).
 
 **Следующий шаг человека** (без изменений по смыслу, добавился только сброс сезона):
 `prepare_scenes.py` (террейн) -> сборка dll -> `python3 tools/validate_module.py`

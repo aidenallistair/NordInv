@@ -15,7 +15,7 @@ namespace NordInvasion
         {
             Instance = this;
             base.OnSubModuleLoad();
-            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.0 - 29 mechanics Loaded!", Colors.Green));
+            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.1 - 29 mechanics Loaded!", Colors.Green));
         }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)

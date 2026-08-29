@@ -138,3 +138,6 @@ API (form-encoded → JSON):
   `test_backend_sql.py` (схема + все SQL-запросы PHP на sqlite)
 - `tools/test_backend_api.py` — контракт бэкенда (in-process / `--serve` / `--base URL`)
 - `tools/make_release.py` — сборка релиз-зипа
+- `docs/VERIFICATION.md` — пошаговая инструкция дальнейших проверок (песочница →
+  террейн → сборка dll → игра → dedicated → релиз), с ожидаемым выводом команд и
+  разбором отказов

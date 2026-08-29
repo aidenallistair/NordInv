@@ -24,7 +24,7 @@ try {
 
     // --- служебные ---
     if ($p === '' && $method === 'GET') {
-        out(['message' => 'Nord Invasion Backend (PHP+MySQL)', 'version' => '2.0', 'ok' => true]);
+        out(['message' => 'Nord Invasion Backend (PHP+MySQL)', 'version' => '2.1', 'ok' => true]);
     }
     if ($p === 'health' && $method === 'GET') {
         out(['ok' => true, 'db' => DB_DRIVER, 'time' => time()]);

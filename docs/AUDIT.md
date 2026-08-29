@@ -147,7 +147,13 @@ M&B II: Bannerlord, кооп-PvE "hold the fort": 25 волн нордов, 29 �
 2. Публичные API вне списка справочника: `Agent.SetHitPoints/SetMaximumHitPoints`,
    `Agent.SpawnMissile`, `Mission.AddExplosion`, `Scene.LoadSceneProp`,
    `Formation.Captain`.
-3. Gauntlet-префабы `NI_Shop.xml` / `NI_BuildMenu.xml` / `NI_CampaignMap.xml` в
+3. **Экранов мода в игре нет**: UIExtender в проекте отсутствует (`grep -rn UIExtender
+   src/` пусто), поэтому `NI_Shop_VM` / `NI_BuildMenu_VM` / `NI_PerkChoice_VM` /
+   `NI_CampaignMap_VM` ни к одному Movie не привязаны. Практическое следствие:
+   **механики 2/18/23 (стройка форта) недоступны игроку** - `FortressBuildManager.TryPlace`
+   вызывается только из VM-команды; магазин частично доступен через F на ящике, перки -
+   через F на тотемах. Порядок проверки и временный debug-хук - `docs/VERIFICATION.md`, шаг 5.0.
+  Gauntlet-префабы `NI_Shop.xml` / `NI_BuildMenu.xml` / `NI_CampaignMap.xml` в
    `ModuleData/GauntletUI/` до сих пор биндят старые имена (`DataSource="{BuyXxxCommand}"`),
    синтаксис атрибутов команд в XML не сверен с нативным префабом. VM'ы переписаны под
    реальные методы (`ExecuteBuySlot1..8`, `ExecuteClaimBattlepass`, `LockedInfo`), но

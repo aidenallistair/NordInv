@@ -116,12 +116,16 @@ def check_balance(files: dict[str, str]) -> None:
 
 # ------------------------------------------------------------- 2) required usings
 
+# Типы, которые встречаются больше чем в одной сборке (или не сверены по 1.0.3):
+# для них отсутствие using = предупреждение, а не ошибка.
+AMBIGUOUS_TYPES = {"Mission", "Colors", "Utility"}
+
 NEEDS_USING = {
     "TaleWorlds.Core": ["CharacterObject", "ItemObject", "ItemModifier", "EquipmentIndex", "BasicCharacterObject",
                         "WeaponComponent", "ItemUsageCategory", "DestructibleComponent", "GameEntity", "Scene",
                         "AgentIndex", "BattleSideEnum", "Equipment"],
     "TaleWorlds.Library": ["Vec3", "Vec2", "MatrixFrame", "Frame", "InformationManager", "InformationMessage",
-                           "Colors", "ViewModel", "DataSourceProperty", "MBRandom", "Utility", "MathHelper", "Mission"],
+                           "Colors", "ViewModel", "DataSourceProperty", "MBRandom", "Utility", "MathHelper"],
     "TaleWorlds.MountAndBlade": ["MissionBehavior", "Agent", "AgentComponent", "AgentBuildData", "Mission",
                                  "Team", "Formation", "MBSubModuleBase", "UsableMachine", "ManagedScript",
                                  "MissionLog", "FormationClass", "KillingBlow", "ScriptedMissionBehavior"],
@@ -142,10 +146,16 @@ def check_usings(files: dict[str, str]) -> None:
             if ns in usings or f"global::{ns}" in usings:
                 continue
             # тип может быть полностью квалифицирован (TaleWorlds.Core.Xxx) - тогда using не нужен
-            qualified = any(re.search(re.escape(ns) + r"\." + re.escape(t) + r"\b", code) for t in used)
-            if qualified and len(used) == 1:
+            missing = [t for t in used
+                       if not re.search(re.escape(ns) + r"\." + re.escape(t) + r"\b", code)]
+            if not missing:
                 continue
-            warn(f"{rel}: используются {', '.join(sorted(used)[:4])} - нужен using {ns};")
+            hard = [t for t in missing if t not in AMBIGUOUS_TYPES]
+            if hard:
+                # тип не найден => CS0246, сборка падает: это ошибка, а не предупреждение
+                err(f"{rel}: используются {', '.join(sorted(hard)[:4])}, но нет using {ns}; -> CS0246")
+            else:
+                warn(f"{rel}: используются {', '.join(sorted(missing)[:4])} - нужен using {ns};")
 
 
 # --------------------------------------------------- 3) override-ы vs известные виртуалы

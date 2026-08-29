@@ -178,8 +178,9 @@ python3 tools/test_backend_api.py --base http://127.0.0.1:8080 --admin-key test-
 python3 tools/test_backend_sql.py
 ```
 
-`--base`/smoke.sh работают и против боевого PHP: `php -S 0.0.0.0:8080 -t src/backend-php`
-после `php src/backend-php/install.php`.
+`--base`/smoke.sh работают и против боевого PHP: после
+`php src/backend-php/install.php` поднять `php -S 0.0.0.0:8080 -t src/backend-php
+src/backend-php/router.php` (роутер обязателен - иначе `/api/*` = 404).
 
 ## Сброс сезона (между сезонами, вручную)
 
