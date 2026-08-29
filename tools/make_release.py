@@ -43,6 +43,17 @@ def walk(include_root: str, rel_prefix: str, zf: zipfile.ZipFile):
             zf.write(full, arc)
 
 
+def flat(root: str, rel_prefix: str, zf: zipfile.ZipFile) -> None:
+    """Только файлы верхнего уровня: каталоги (__pycache__ и т.п.) и бинарки не берём."""
+    for fn in sorted(os.listdir(root)):
+        full = os.path.join(root, fn)
+        if not os.path.isfile(full):
+            continue
+        if fn in EXCLUDE_DIRS or os.path.splitext(fn)[1].lower() in EXCLUDE_EXT:
+            continue
+        zf.write(full, os.path.join(rel_prefix, fn))
+
+
 def main() -> None:
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, f"NiNordInvasion_v{VER}_source.zip")
@@ -63,11 +74,9 @@ def main() -> None:
              f"{prefix}/src-build/src/NordInvasion", zf)
         # Гайды и инструменты
         walk(os.path.join(REPO_ROOT, "docs"), f"{prefix}/docs", zf)
-        for f in os.listdir(os.path.join(REPO_ROOT, "tools")):
-            zf.write(os.path.join(REPO_ROOT, "tools", f), f"{prefix}/tools/{f}")
+        flat(os.path.join(REPO_ROOT, "tools"), f"{prefix}/tools", zf)
         # Backend (dev FastAPI, остаётся в комплекте)
-        for f in os.listdir(os.path.join(REPO_ROOT, "src", "backend")):
-            zf.write(os.path.join(REPO_ROOT, "src", "backend", f), f"{prefix}/backend/{f}")
+        flat(os.path.join(REPO_ROOT, "src", "backend"), f"{prefix}/backend", zf)
         # Backend PHP + MySQL (продакшн-персистентность)
         walk(os.path.join(REPO_ROOT, "src", "backend-php"), f"{prefix}/backend-php", zf)
         # Dedicated server

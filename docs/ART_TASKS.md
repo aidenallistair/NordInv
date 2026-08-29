@@ -32,11 +32,17 @@
 | ni_treasury_chest | vlandia_chest_c | казна |
 | ni_ram | empire_garden_wall_a1 | таран (2000 HP) |
 | ni_camp_nord | village_tent_e | лагерь нордов (3 шт. на цель) |
-| ni_rock_trap / ni_log_trap / ni_oil_ditch / ni_drawbridge | - | ловушки (без фоллбека: не ставятся) |
-| ni_ballista / ni_catapult | - | осадные (без фоллбека) |
+| ni_spike_trap | fence_empire_a | ловушка-колья |
+| ni_rock_trap / ni_log_trap / ni_oil_ditch | bd_barrel_a / bd_wood_heap_a | ловушки (session 4: ставятся, фоллбек есть) |
+| ni_ballista / ni_catapult | bd_wood_heap_a | осадные (session 4: команды BuildBallista/BuildCatapult + фоллбек) |
+| ni_armory_chest | vlandia_chest_c | ящик оружейной: F = аптечка/снаряды/ремонт (`NI_ArmoryUsable`) |
 
 Порядок: 1) импортируй меши через Modding Kit, 2) поправь `SceneProps.xml`
 (добавь `material=`), 3) убери `SpawnWithFallback` -> `Spawn` для нужного пропса.
+
+Все 13 типов построек и ящик оружейной уже спавнятся с фоллбеком, поэтому арт — это
+«стало красиво», а не «иначе не работает». Тотемы выбора перка временно используют
+`ni_brazier` (жаровня): своего меша `ni_perk_totem` в `SceneProps.xml` ещё нет.
 
 ## 3. Звуки (пункт плана "Звуки для мутаторов, Last Stand музыка")
 

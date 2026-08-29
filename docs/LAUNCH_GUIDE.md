@@ -149,12 +149,19 @@ php /var/www/nordinv/install.php
 
 # 5. nginx-сайт (пример в src/backend-php/README.md) + reload
 
-# 6. Smoke-тест (должно быть "18 ok, 0 fail")
+# 6. Smoke-тест (должно быть "29 ok, 0 fail": профиль, награды, магазин,
+#    battlepass-claim, голоса кампании, сброс сезона)
 bash /var/www/nordinv/tests/smoke.sh http://nordinv.example.com <API_SECRET>
+
+# 7. (опция) контрактный тест против этого же PHP: 64-66 проверок, идемпотентность
+python3 tools/test_backend_api.py --base http://nordinv.example.com --secret <API_SECRET>
 ```
 
 > Dev-режим без MySQL: в `config.php` `DB_DRIVER = "sqlite"`,
 > `php -S 0.0.0.0:8080 -t src/backend-php`.
+> Совсем без PHP: `python3 src/backend/dev_server.py --port 8080 --reset` —
+> тот же контракт на stdlib+sqlite (ядро `src/backend/nidb.py`), удобно для
+> локальной проверки магазина/балансов.
 
 ### Настройка в моде:
 

@@ -57,8 +57,9 @@ try {
         $row = find_player($pdo, $ident['id'], $ident['steam'], $ident['name'], true);
 
         $lvl = apply_xp($row, 10);
-        $up = $pdo->prepare('UPDATE players SET gold = gold + ?, kills = kills + 1, wood = wood + ?, metal = metal + ?, xp = ?, level = ?, season_points = season_points + 1, boss_kills = boss_kills + ?, last_seen = ? WHERE id = ?');
-        $up->execute([$gold, $wood, $metal, $lvl[1], $lvl[0], $isBoss ? 1 : 0, time(), $row['id']]);
+        $earned = (int)($row['season_points_earned'] ?? 0) + 1;
+        $up = $pdo->prepare('UPDATE players SET gold = gold + ?, kills = kills + 1, wood = wood + ?, metal = metal + ?, xp = ?, level = ?, season_points = season_points + 1, season_points_earned = ?, battlepass_level = ?, boss_kills = boss_kills + ?, last_seen = ? WHERE id = ?');
+        $up->execute([$gold, $wood, $metal, $lvl[1], $lvl[0], $earned, bp_level_from($earned), $isBoss ? 1 : 0, time(), $row['id']]);
 
         $kl = $pdo->prepare('INSERT INTO kill_log (player_id, wave, troop, gold, created_at) VALUES (?,?,?,?,?)');
         $kl->execute([$row['id'], $wave, $troop, $gold, time()]);
@@ -90,8 +91,9 @@ try {
         }
 
         $lvl = apply_xp($row, 5 * max(1, $wave));
-        $up = $pdo->prepare('UPDATE players SET gold = gold + ?, wood = wood + ?, metal = metal + ?, xp = ?, level = ?, season_points = season_points + 1, best_wave = CASE WHEN ? > best_wave THEN ? ELSE best_wave END, perks = ?, last_seen = ? WHERE id = ?');
-        $up->execute([$gold, $wood, $metal, $lvl[1], $lvl[0], $wave, $wave, json_encode($perks), time(), $row['id']]);
+        $earned = (int)($row['season_points_earned'] ?? 0) + 1;
+        $up = $pdo->prepare('UPDATE players SET gold = gold + ?, wood = wood + ?, metal = metal + ?, xp = ?, level = ?, season_points = season_points + 1, season_points_earned = ?, battlepass_level = ?, best_wave = CASE WHEN ? > best_wave THEN ? ELSE best_wave END, perks = ?, last_seen = ? WHERE id = ?');
+        $up->execute([$gold, $wood, $metal, $lvl[1], $lvl[0], $earned, bp_level_from($earned), $wave, $wave, json_encode($perks), time(), $row['id']]);
 
         out(['status' => 'ok', 'wave' => $wave, 'level' => $lvl[0], 'xp' => $lvl[1]]);
     }
@@ -108,9 +110,10 @@ try {
 
         $bonusGold = $won ? 100 : 0;
         $bonusSp = $won ? 50 : 0;
+        $earned = (int)($row['season_points_earned'] ?? 0) + $bonusSp;
         $up = $pdo->prepare('UPDATE players SET ' . ($won ? 'wins = wins + 1' : 'losses = losses + 1')
-            . ', best_wave = CASE WHEN ? > best_wave THEN ? ELSE best_wave END, deaths = deaths + ?, gold = gold + ?, season_points = season_points + ?, last_seen = ? WHERE id = ?');
-        $up->execute([$waveReached, $waveReached, $deaths, $bonusGold, $bonusSp, time(), $row['id']]);
+            . ', best_wave = CASE WHEN ? > best_wave THEN ? ELSE best_wave END, deaths = deaths + ?, gold = gold + ?, season_points = season_points + ?, season_points_earned = ?, battlepass_level = ?, last_seen = ? WHERE id = ?');
+        $up->execute([$waveReached, $waveReached, $deaths, $bonusGold, $bonusSp, $earned, bp_level_from($earned), time(), $row['id']]);
 
         $resp = ['status' => 'ok', 'won' => $won, 'bonus_gold' => $bonusGold];
         $fresh = refresh_row($pdo, $row['id']);
@@ -245,8 +248,11 @@ try {
             $f = $pdo->prepare('SELECT id FROM players WHERE id = ? OR steam_id = ? LIMIT 1');
             $f->execute([$pid, $pid]);
             if ($f->fetch()) {
-                $pdo->prepare('UPDATE players SET gold = gold + 200, season_points = season_points + 10 WHERE id = ?')
-                    ->execute([$pid]);
+                $pr = $pdo->prepare('SELECT season_points_earned FROM players WHERE id = ?');
+                $pr->execute([$pid]);
+                $earned = (int)$pr->fetchColumn() + 10;
+                $pdo->prepare('UPDATE players SET gold = gold + 200, season_points = season_points + 10, season_points_earned = ?, battlepass_level = ? WHERE id = ?')
+                    ->execute([$earned, bp_level_from($earned), $pid]);
             }
         }
         out(['village_id' => $vid, 'won' => $won]);
@@ -289,6 +295,187 @@ try {
             $out[] = ['level' => (int)$r['level'], 'type' => $r['reward_type'], 'id' => $r['reward_id'], 'name' => $r['reward_name']];
         }
         out($out);
+    }
+
+    // --- магазин (цены и whitelist - из shop_catalog.json) ---
+    if ($p === 'shop/catalog' && $method === 'GET') {
+        if (!have_catalog()) fail('shop catalog missing: ' . CATALOG_FILE, 503);
+        out([
+            'version' => 1,
+            'bp_points_per_level' => BP_POINTS_PER_LEVEL,
+            'blueprints' => BLUEPRINTS,
+            'items' => array_map(function (array $i) {
+                return [
+                    'id' => (string)($i['id'] ?? ''),
+                    'name' => (string)($i['name'] ?? ''),
+                    'type' => (string)($i['type'] ?? 'resource'),
+                    'gold' => (int)($i['gold'] ?? 0),
+                    'wood' => (int)($i['wood'] ?? 0),
+                    'metal' => (int)($i['metal'] ?? 0),
+                    'grants' => array_values(array_map('strval', $i['grants'] ?? [])),
+                    'desc' => (string)($i['desc'] ?? ''),
+                ];
+            }, SHOP_ITEMS),
+        ]);
+    }
+
+    if ($p === 'shop/buy' && $method === 'POST') {
+        if (!have_catalog()) fail('shop catalog missing: ' . CATALOG_FILE, 503);
+        $ident = player_identity();
+        $itemId = substr(req('item_id'), 0, 128);
+        $qty = max(1, min(5, in_int('qty', 1)));
+
+        $item = shop_item($itemId);
+        if (!$item) fail('unknown item: ' . $itemId, 400);
+
+        $row = find_player($pdo, $ident['id'], $ident['steam'], $ident['name'], true);
+        $cost = ['gold' => (int)($item['gold'] ?? 0) * $qty,
+                 'wood' => (int)($item['wood'] ?? 0) * $qty,
+                 'metal' => (int)($item['metal'] ?? 0) * $qty];
+
+        // чертёж, который уже открыт, покупать незачем
+        $bps = json_decode((string)($row['blueprints'] ?: '[]'), true) ?: [];
+        if (($item['type'] ?? '') === 'blueprint') {
+            $bid = substr((string)preg_replace('#^blueprint:#', '', (string)($item['grants'][0] ?? '')), 0, 128);
+            if (in_array($bid, $bps, true)) fail('already unlocked: ' . $bid, 409);
+        }
+
+        if ((int)$row['gold'] < $cost['gold'] || (int)$row['wood'] < $cost['wood'] || (int)$row['metal'] < $cost['metal']) {
+            fail('not enough resources (need ' . $cost['gold'] . 'g ' . $cost['wood'] . 'w ' . $cost['metal'] . 'm)', 400);
+        }
+
+        // награды валидируем ДО списания: битый каталог не должен съедать золото
+        foreach (item_grants($item) as $g) {
+            if (parse_grant((string)$g)[0] === 'blueprint') {
+                $bid = substr(trim((string)(explode(':', (string)$g, 2)[1] ?? '')), 0, 128);
+                if ($bid === '' || !in_array($bid, BLUEPRINTS, true)) fail('unknown blueprint in catalog: ' . $bid, 500);
+            }
+        }
+
+        $pay = $pdo->prepare('UPDATE players SET gold = gold - ?, wood = wood - ?, metal = metal - ?, last_seen = ? WHERE id = ?');
+        $pay->execute([$cost['gold'], $cost['wood'], $cost['metal'], time(), $row['id']]);
+
+        $grants = [];
+        for ($i = 0; $i < $qty; $i++) foreach (item_grants($item) as $g) $grants[] = $g;
+        $res = apply_grants($pdo, $row['id'], $grants);
+
+        $lg = $pdo->prepare('INSERT INTO shop_purchases (player_id, item_id, qty, gold, wood, metal, created_at) VALUES (?,?,?,?,?,?,?)');
+        $lg->execute([$row['id'], $itemId, $qty, $cost['gold'], $cost['wood'], $cost['metal'], time()]);
+
+        out([
+            'status' => 'ok',
+            'item_id' => $itemId,
+            'qty' => $qty,
+            'paid' => $cost,
+            'granted' => $res['applied'],
+            'gold' => $res['balances']['gold'],
+            'wood' => $res['balances']['wood'],
+            'metal' => $res['balances']['metal'],
+            'season_points' => $res['balances']['season_points'],
+            'blueprints' => $res['balances']['blueprints'],
+            'titles' => $res['balances']['titles'],
+            'cosmetics' => $res['balances']['cosmetics'],
+        ]);
+    }
+
+    if ($p === 'shop/history' && $method === 'GET') {
+        $ident = player_identity();
+        $row = find_player($pdo, $ident['id'], $ident['steam'], $ident['name'], false);
+        if (!$row) fail('player not found', 404);
+        $st = $pdo->prepare('SELECT item_id, qty, gold, wood, metal, created_at FROM shop_purchases WHERE player_id = ? ORDER BY id DESC LIMIT 50');
+        $st->execute([$row['id']]);
+        out(array_map(function (array $r) {
+            return ['item_id' => $r['item_id'], 'qty' => (int)$r['qty'], 'gold' => (int)$r['gold'],
+                    'wood' => (int)$r['wood'], 'metal' => (int)$r['metal'], 'created_at' => (int)$r['created_at']];
+        }, $st->fetchAll()));
+    }
+
+    // --- BattlePass: прогресс и выдача наград ---
+    if ($p === 'battlepass/progress' && $method === 'GET') {
+        $ident = player_identity();
+        $row = find_player($pdo, $ident['id'], $ident['steam'], $ident['name'], false);
+        if (!$row) fail('player not found', 404);
+        $season = current_season_id($pdo);
+        $earned = (int)($row['season_points_earned'] ?? 0);
+        $level = bp_level_from($earned);
+        $claimed = claimed_levels($pdo, $row['id'], $season);
+        $rewards = [];
+        foreach ($pdo->query('SELECT * FROM battlepass_rewards ORDER BY level')->fetchAll() as $r) {
+            $rewards[] = [
+                'level' => (int)$r['level'], 'type' => $r['reward_type'], 'id' => $r['reward_id'],
+                'name' => $r['reward_name'],
+                'unlocked' => (int)$r['level'] <= $level,
+                'claimed' => in_array((int)$r['level'], $claimed, true),
+            ];
+        }
+        out([
+            'season' => $season,
+            'points' => (int)$row['season_points'],
+            'points_earned' => $earned,
+            'level' => $level,
+            'max_level' => BP_MAX_LEVEL,
+            'points_per_level' => BP_POINTS_PER_LEVEL,
+            'points_to_next' => $level >= BP_MAX_LEVEL ? 0 : ($level + 1) * BP_POINTS_PER_LEVEL - $earned,
+            'claimed' => $claimed,
+            'rewards' => $rewards,
+        ]);
+    }
+
+    if ($p === 'battlepass/claim' && $method === 'POST') {
+        $ident = player_identity();
+        $level = in_int('level', -1);
+        if ($level < 1 || $level > BP_MAX_LEVEL) fail('bad level', 400);
+
+        $row = find_player($pdo, $ident['id'], $ident['steam'], $ident['name'], true);
+        $st = $pdo->prepare('SELECT * FROM battlepass_rewards WHERE level = ?');
+        $st->execute([$level]);
+        $reward = $st->fetch();
+        if (!$reward) fail('no reward for level ' . $level, 404);
+
+        $season = current_season_id($pdo);
+        if (in_array($level, claimed_levels($pdo, $row['id'], $season), true)) {
+            fail('already claimed', 409);
+        }
+        $have = bp_level_from((int)($row['season_points_earned'] ?? 0));
+        if ($level > $have) fail('battlepass level ' . $level . ' required (you have ' . $have . ')', 400);
+
+        $grant = reward_to_grant($reward);
+        $res = apply_grants($pdo, $row['id'], [$grant]);
+
+        $cl = $pdo->prepare('INSERT INTO battlepass_claims (player_id, level, season, reward, created_at) VALUES (?,?,?,?,?)');
+        $cl->execute([$row['id'], $level, $season, (string)$reward['reward_name'], time()]);
+
+        out([
+            'status' => 'ok', 'level' => $level, 'season' => $season,
+            'reward' => ['type' => $reward['reward_type'], 'id' => $reward['reward_id'], 'name' => $reward['reward_name']],
+            'granted' => $res['applied'],
+            'gold' => $res['balances']['gold'],
+            'wood' => $res['balances']['wood'],
+            'metal' => $res['balances']['metal'],
+            'season_points' => $res['balances']['season_points'],
+            'blueprints' => $res['balances']['blueprints'],
+            'titles' => $res['balances']['titles'],
+            'cosmetics' => $res['balances']['cosmetics'],
+        ]);
+    }
+
+    // --- сброс сезона (админ; требует ADMIN_SECRET) ---
+    if ($p === 'season/reset' && $method === 'POST') {
+        check_admin();
+        $season = current_season_id($pdo);
+        $now = time();
+
+        $arch = $pdo->prepare('INSERT INTO season_history (season, player_id, season_points, bp_level, kills, boss_kills, best_wave, wins, losses, created_at) SELECT ?, id, season_points, battlepass_level, kills, boss_kills, best_wave, wins, losses, ? FROM players');
+        $arch->execute([$season, $now]);
+        $archived = $arch->rowCount();
+
+        $pdo->exec("UPDATE players SET season_points = 0, season_points_earned = 0, battlepass_level = 0, meta = '[]'");
+
+        $next = $season + 1;
+        $ins = $pdo->prepare('INSERT INTO seasons (id, name, start_time, end_time, rewards) VALUES (?,?,?,?,?)');
+        $ins->execute([$next, 'Season ' . $next, $now, $now + 60 * 60 * 24 * 60, json_encode([])]);
+
+        out(['status' => 'ok', 'archived_season' => $season, 'new_season' => $next, 'players_archived' => $archived]);
     }
 
     fail('not found: ' . $method . ' /api/' . $p, 404);

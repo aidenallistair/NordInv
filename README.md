@@ -106,6 +106,15 @@ API (form-encoded → JSON):
 
 ## Следующие шаги (актуальный план, см. docs/PROGRESS.md)
 
+0. **Готово (session 4, 2026-08-29):** боевой магазин (покупка золота/ресурсов/чертежей
+   через бэкенд, `POST /api/shop/buy` + `grants`), BattlePass-claim
+   (`/api/battlepass/claim`, `season_points_earned`), сброс сезона
+   (`/api/season/reset` под `X-NI-Admin`), выбор перка и сервисные покупки через F на
+   пропсах (`NI_ArmoryUsable`, `NI_PerkTotemUsable`); статические проверки C#/SQL/API
+   (`tools/lint_csharp.py`, `tools/test_backend_sql.py`, `tools/test_backend_api.py`).
+   Зарегистрированные баги, закрытые попутно: `PerkManager` не был зарегистрирован в
+   `SubModule` (механика 1 не запускалась), `typeof(TaleWorlds.Core.Agent)` в
+   `NISound` (не компилировалось), сообщения из `Task.Run` вне UI-потока.
 1. **Террейн карт (Windows + Bannerlord):** `python3 tools/prepare_scenes.py`
    - сцены `mp_ni_*` уже сгенерированы (XML: 65 entry points + пропсы,
      `tools/gen_ni_scenes.py`); скрипт дополнит их бинарным террейном из vanilla
@@ -121,7 +130,11 @@ API (form-encoded → JSON):
 5. **Арт-задачи** (docs/ART_TASKS.md): иконки перков, меши ni_*-пропсов,
    кастомные звуки (UI и код уже готовы, ждут ассеты)
 6. **Тест Dedicated Server** (2 клиента, SteamCMD) -> upload на NexusMods
-   (source-зип уже собран: `dist/NiNordInvasion_v2_0_0_source.zip`)
+   (source-зип пересобран: `dist/NiNordInvasion_v2_1_0_source.zip`)
 
-Полезные инструменты: `tools/validate_module.py` (проверка модуля перед релизом),
-`tools/make_release.py` (сборка релиз-зипа).
+Полезные инструменты:
+- `tools/validate_module.py` — проверка модуля перед релизом; дополнительно запускает
+  `lint_csharp.py` (скобки/usings/override-ы/контракт маршрутов/сверка каталога) и
+  `test_backend_sql.py` (схема + все SQL-запросы PHP на sqlite)
+- `tools/test_backend_api.py` — контракт бэкенда (in-process / `--serve` / `--base URL`)
+- `tools/make_release.py` — сборка релиз-зипа

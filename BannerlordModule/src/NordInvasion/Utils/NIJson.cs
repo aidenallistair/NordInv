@@ -73,6 +73,48 @@ namespace NordInvasion.Utils
             return res;
         }
 
+        /// <summary>Поле-массив объектов: [{"a":1},{"a":2}] -> список словарей.</summary>
+        public static List<Dictionary<string, object>> GetObjectArray(Dictionary<string, object> obj, string key)
+        {
+            var res = new List<Dictionary<string, object>>();
+            object v;
+            if (obj == null || !obj.TryGetValue(key, out v)) return res;
+            var list = v as List<object>;
+            if (list == null) return res;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var row = list[i] as Dictionary<string, object>;
+                if (row != null) res.Add(row);
+            }
+            return res;
+        }
+
+        /// <summary>Поле-bool (true/1).</summary>
+        public static bool GetBool(Dictionary<string, object> obj, string key, bool def = false)
+        {
+            object v;
+            if (obj == null || !obj.TryGetValue(key, out v) || v == null) return def;
+            var s2 = v.ToString();
+            if (s2 == "1" || s2 == "true" || s2 == "True") return true;
+            if (s2 == "0" || s2 == "false" || s2 == "False") return false;
+            return def;
+        }
+
+        /// <summary>Ответ-массив объектов: [{...},{...}] (например /api/campaign/villages).</summary>
+        public static List<Dictionary<string, object>> ParseObjectArray(string json)
+        {
+            var res = new List<Dictionary<string, object>>();
+            var v = Parse(json);
+            var list = v as List<object>;
+            if (list == null) return res;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var row = list[i] as Dictionary<string, object>;
+                if (row != null) res.Add(row);
+            }
+            return res;
+        }
+
         // ===== internals =====
 
         static void SkipWs(string s, ref int i)

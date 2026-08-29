@@ -24,7 +24,7 @@ req() { # имя, путь, data
   fi
 }
 
-# запрос, ожидаем НУЛЕВой 400 (неизвестный предмет/чертёж)
+# запрос, ожидаем 400 (неизвестный предмет/чертёж/нехватка ресурсов)
 req400() {
   local out code body
   out=$(curl "${H[@]}" -d "$3" "$BASE/api/$2")
@@ -65,6 +65,43 @@ req  "campaign/battle" "campaign/battle" "village_id=0&won=1&players=test_smoke_
 get  "season/current"  "season/current"
 get  "leaderboard"     "leaderboard"
 get  "battlepass/rewards" "battlepass/rewards"
+
+# --- магазин (каталог из shop_catalog.json) ---
+get  "shop/catalog" "shop/catalog"
+req  "shop/buy wood_pack_10" "shop/buy" "$P&item_id=wood_pack_10"
+req400 "shop/buy unknown"     "shop/buy" "$P&item_id=hacked_item"
+req  "shop/buy blueprint"     "shop/buy" "$P&item_id=brazier"
+out=$(curl "${H[@]}" -d "$P&item_id=brazier" "$BASE/api/shop/buy")
+code="${out##*$'\n'}"
+case "$code" in
+  409|400) ok "shop/buy blueprint повторно -> $code (не даёт купить дважды)";;
+  *)       bad "shop/buy blueprint повторно (ожидали 400/409)" "$out";;
+esac
+req400 "shop/buy no money"    "shop/buy" "player_id=test_smoke_nomoney&item_id=catapult&qty=5"
+get  "shop/history" "shop/history?player_id=test_smoke_1"
+
+# --- battlepass: прогресс / выдача / идемпотентность ---
+get  "battlepass/progress" "battlepass/progress?player_id=test_smoke_1"
+out=$(curl "${H[@]}" -d "player_id=test_smoke_1&level=1" "$BASE/api/battlepass/claim")
+code="${out##*$'\n'}"; body="${out%$'\n'*}"
+case "$code" in
+  200) ok "battlepass/claim lvl1 (200)";;
+  400) ok "battlepass/claim lvl1 (400: уровень ещё не открыт - ок для чистого БД)";;
+  *)   bad "battlepass/claim (ожидали 200/400)" "$body";;
+esac
+out=$(curl "${H[@]}" -d "player_id=test_smoke_1&level=999" "$BASE/api/battlepass/claim")
+code="${out##*$'\n'}"
+[ "$code" = "400" ] && ok "battlepass/claim bad level (400)" || bad "battlepass/claim bad level (ожидали 400, было $code)"
+
+# --- сброс сезона (админский, по умолчанию выключен) ---
+out=$(curl "${H[@]}" -d "admin_key=wrong" "$BASE/api/season/reset")
+code="${out##*$'\n'}"
+case "$code" in
+  503) ok "season/reset: ADMIN_SECRET не задан -> 503 (как и должно быть на проде по умолчанию)";;
+  403) ok "season/reset: неверный ключ отклонён (403)";;
+  200) ok "season/reset: выполнен (проверь, что это тестовая база!)";;
+  *)   bad "season/reset (ожидали 200/403/503)" "$out";;
+esac
 
 echo "=== Итог: $PASS ok, $FAIL fail ==="
 [ "$FAIL" -eq 0 ]

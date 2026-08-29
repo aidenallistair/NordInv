@@ -89,7 +89,7 @@ M&B II: Bannerlord, кооп-PvE "hold the fort": 25 волн нордов, 29 �
     полнота сцен (65 спавнов, бинарные файлы), troop/item/prop ID кода vs XML,
     конфиг dedicated-сервера. Текущий статус: **0 ошибок**.
 24. **`tools/make_release.py`** — release-зип (source):
-    `dist/NiNordInvasion_v2_0_0_source.zip`.
+    `dist/NiNordInvasion_v2_1_0_source.zip`.
 25. **DedicatedCustomServerConfig.xml** — `GameType` был `NordInvasion` (не
     существует) → `Multiplayer` (vanilla-конвейер Custom Battle сервера).
 
@@ -116,3 +116,50 @@ M&B II: Bannerlord, кооп-PvE "hold the fort": 25 волн нордов, 29 �
   подключение prefab'ов NI_HUD/NI_Shop и т.д.).
 - **Мораль: flee** — сейчас только замедление отряда (SetBehavior(Flee) не
   верифицирован против DLL).
+
+---
+
+## Session 4 (2026-08-29): что нашёл статический аудит и что осталось
+
+Инструменты: `tools/lint_csharp.py` (C# без компилятора), `tools/test_backend_sql.py`
+(PHP SQL на sqlite), `tools/test_backend_api.py` (контракт бэкенда). Оба анализатора
+вызываются из `tools/validate_module.py`, поэтому «зелёный валидатор» = код
+синтаксически цел, usings на месте, контракты C#/PHP/Python не разъехались.
+
+**Закрытые находки (это были реальные баги, не стиль):**
+
+| Находка | Эффект без фикса |
+|---------|-------------------|
+| `PerkManager` не зарегистрирован в `SubModule.AddMissionBehavior` | `GetMissionBehavior<PerkManager>()` = null → механика 1 (перки) не работала |
+| `typeof(TaleWorlds.Core.Agent)` в `Audio/NISound.cs` | CS0234, файл не компилируется (`Agent` в `TaleWorlds.MountAndBlade`) |
+| нет `using` в PropSpawner / RoleComponents / MetaProgressionManager | CS0246 на Vec3/GameEntity/InformationManager |
+| `InformationManager.DisplayMessage` из `Task.Run` | сообщение вне UI-потока (падает/теряется) → очередь `_uiQueue` |
+| `OnCampaignWin` слал `village_id=0, won=1, wave=25` | кампания всегда «победа», деревня не учитывалась |
+| dev-бэкенд: `players` по неверным индексам колонок, только JSON-тело, 7 маршрутов нет | профиль читался криво; реальные запросы мода → 422 |
+| чертежи были «кирпичом» в `FortressBuildManager` только для 2 построек | механика магазина не влияла на стройку |
+
+**Открытые риски (проверяются только игрой/DLL):**
+
+1. `AgentComponent.OnTickAsAI(float)` — 4 класса (медик, знамёнщик, стихии, ранения)
+   объявляют этот override; в справочнике 1.0.3 виртуала с такой сигнатурой нет. Если его
+   нет и в 1.2.10 → CS0115 при сборке либо молча мёртвый код. Единственное предупреждение
+   `lint_csharp.py`; при первой сборке сверить по DLL и при необходимости переписать на `OnTick`.
+2. Публичные API вне списка справочника: `Agent.SetHitPoints/SetMaximumHitPoints`,
+   `Agent.SpawnMissile`, `Mission.AddExplosion`, `Scene.LoadSceneProp`,
+   `Formation.Captain`.
+3. Gauntlet-префабы `NI_Shop.xml` / `NI_BuildMenu.xml` / `NI_CampaignMap.xml` в
+   `ModuleData/GauntletUI/` до сих пор биндят старые имена (`DataSource="{BuyXxxCommand}"`),
+   синтаксис атрибутов команд в XML не сверен с нативным префабом. VM'ы переписаны под
+   реальные методы (`ExecuteBuySlot1..8`, `ExecuteClaimBattlepass`, `LockedInfo`), но
+   экранный путь считается неподключённым: рабочий ввод сегодня — F на пропсах
+   (`NI_ArmoryUsable`, `NI_PerkTotemUsable`) + `UIExtender`-миксины. Не «чинить» XML вслепую.
+4. Сцены без terrain.bin/flora.bin (12 предупреждений валидатора) и меши ni_* — только
+   на машине с игрой; до этого пропсы поднимаются vanilla-фоллбеками.
+5. `NI_PerkTotemUsable.Used` → вместо `GameEntity.Release()` (не верифицирован) тотемы
+   гасятся `SetActive(false)` и только когда окно выбора закрылось у всех игроков.
+
+**Как перепроверить перед релизом:**
+`python3 tools/validate_module.py` (0 ошибок — предупреждения про террейн ожидаемы),
+`python3 tools/test_backend_sql.py`, `bash src/backend-php/tests/smoke.sh <URL> <SECRET>`
+(29 ok) на поднятом бэкенде.
+

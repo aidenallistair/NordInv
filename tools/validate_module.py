@@ -92,8 +92,9 @@ props = open(os.path.join(MOD, "ModuleData", "SceneProps.xml"), encoding="utf-8"
 prop_ids = set(re.findall(r'<SceneProp id="([^"]+)"', props))
 code_props = set()
 for f in glob.glob(os.path.join(SRC, "**", "*.cs"), recursive=True):
-    code_props |= set(re.findall(r'SpawnWithFallback\(\s*Mission\.Current\.Scene,\s*"([^"]+)"', open(f, encoding="utf-8").read()))
-    code_props |= set(re.findall(r'Spawn\(Mission\.Current\.Scene,\s*"([^"]+)"', open(f, encoding="utf-8").read()))
+    cs = open(f, encoding="utf-8").read()
+    code_props |= set(re.findall(r'SpawnWithFallback\([^,]+,\s*"([^"]+)"', cs))
+    code_props |= set(re.findall(r'Spawn\([^,]+,\s*"([^"]+)"', cs))
 for r in sorted(code_props - prop_ids):
     err(f"Код спавнит prop {r!r}, которого нет в SceneProps.xml")
 
@@ -124,6 +125,53 @@ try:
         err("DedicatedCustomServerConfig.xml: нет <Module Id=NordInvasion>")
 except Exception as e:
     err(f"DedicatedCustomServerConfig.xml: {e}")
+
+
+# 9. Единый источник каталога: shop_catalog.json валиден и согласован сам с собой
+import json
+catalog_path = os.path.join(REPO_ROOT, "src", "backend-php", "shop_catalog.json")
+if os.path.exists(catalog_path):
+    try:
+        catalog = json.load(open(catalog_path, encoding="utf-8"))
+        allow = set(catalog.get("blueprint_ids", []))
+        items = catalog.get("items", [])
+        if not items:
+            err("shop_catalog.json: пустой список items")
+        for it in items:
+            for g in it.get("grants", []):
+                if str(g).startswith("blueprint:") and str(g)[10:] not in allow:
+                    err(f"shop_catalog.json: {it.get('id')} выдаёт чертёж {g[10:]!r}, которого нет в blueprint_ids")
+            if str(it.get("id", "")).startswith("ni_"):
+                err(f"shop_catalog.json: id {it['id']} начинается с ni_ (это id пропсов, не товаров)")
+        for lvl in catalog.get("battlepass", []):
+            if lvl.get("type") == "blueprint" and lvl.get("id") not in allow:
+                err(f"shop_catalog.json: battlepass lvl {lvl.get('level')} выдаёт {lvl.get('id')!r} вне allowlist")
+        if catalog.get("bp_points_per_level", 0) < 1:
+            err("shop_catalog.json: bp_points_per_level должен быть > 0")
+    except Exception as e:
+        err(f"shop_catalog.json: {e}")
+else:
+    err("нет src/backend-php/shop_catalog.json (каталог магазина/battlepass)")
+
+# 10. Статические анализаторы: C# (без компилятора) и SQL PHP-бэкенда
+for script, args in (("lint_csharp.py", []), ("test_backend_sql.py", [])):
+    path = os.path.join(REPO_ROOT, "tools", script)
+    if not os.path.exists(path):
+        err(f"нет tools/{script}")
+        continue
+    import subprocess
+    r = subprocess.run([sys.executable, path] + args, cwd=REPO_ROOT,
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        for line in (r.stdout or "").splitlines():
+            if line.startswith("ERROR:"):
+                errors.append(f"[{script}] {line[7:].strip()}")
+        if not any(l.startswith(f"[{script}]") for l in errors):
+            err(f"[{script}] вернул код {r.returncode} без строк ERROR - прогони вручную")
+    else:
+        tail = [l for l in (r.stdout or "").splitlines() if "Итог" in l or "Линтер" in l]
+        for t in tail:
+            print("  ", script, "->", t)
 
 print("=" * 60)
 for e in errors:

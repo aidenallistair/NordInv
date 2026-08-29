@@ -21,8 +21,67 @@ namespace NordInvasion.Managers
         public static string BackendUrl = "http://localhost:8080";
         public static string ApiSecret = "";
 
+        /// <summary>
+        /// Бэкенд ответил хотя бы раз (логин/каталог). Пока false - магазин
+        /// работает локально (BuyLocal), чтобы мод был играбельным без MySQL.
+        /// </summary>
+        public static bool BackendReady;
+
         private static readonly HttpClient _http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
         private readonly HashSet<Agent> _loginStarted = new HashSet<Agent>();
+
+        // Ответы бэкенда приходят из Task.Run - в UI/игру сообщения гоним через
+        // очередь и отдаём в OnMissionTick (InformationManager не тред-безопасен).
+        private readonly Queue<Action> _uiQueue = new Queue<Action>();
+
+        public void QueueUi(Action action)
+        {
+            if (action == null) return;
+            lock (_uiQueue) _uiQueue.Enqueue(action);
+        }
+
+        public override void OnBehaviorInitialize()
+        {
+            base.OnBehaviorInitialize();
+            // Dedicated-сервер может задать адрес без пересборки dll:
+            //   set NI_BACKEND_URL=http://10.0.0.5:8080
+            //   set NI_API_SECRET=тот-же-секрет-что-в-config.php
+            var url = Environment.GetEnvironmentVariable("NI_BACKEND_URL");
+            if (!string.IsNullOrEmpty(url)) BackendUrl = url.TrimEnd('/');
+            var secret = Environment.GetEnvironmentVariable("NI_API_SECRET");
+            if (!string.IsNullOrEmpty(secret)) ApiSecret = secret;
+        }
+
+        private bool _armorySpawned = false;
+
+        public override void OnMissionTick(float dt)
+        {
+            base.OnMissionTick(dt);
+
+            // "Физический UI": оружейный ящик с UsableMachine (F = сервисные покупки),
+            // пока Gauntlet-экраны не подключены (docs/AUDIT.md).
+            if (!_armorySpawned)
+            {
+                var main = Mission.Current != null ? Mission.Current.MainAgent : null;
+                if (main != null)
+                {
+                    _armorySpawned = true;
+                    SpawnArmoryChest(main);
+                }
+                return;
+            }
+
+            if (_uiQueue.Count == 0) return;
+            for (int i = 0; i < 8 && _uiQueue.Count > 0; i++)
+            {
+                Action action = null;
+                lock (_uiQueue)
+                    if (_uiQueue.Count > 0) action = _uiQueue.Dequeue();
+                if (action == null) continue;
+                try { action(); }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine("PersistenceManager UI: " + ex.Message); }
+            }
+        }
 
         public class PlayerGoldComponent : AgentComponent
         {
@@ -36,9 +95,12 @@ namespace NordInvasion.Managers
             public List<int> Perks = new List<int>();
             public List<string> Blueprints = new List<string>();
             public List<string> Titles = new List<string>();
+            public List<string> Cosmetics = new List<string>(); // skins рангов (Mechanic 26)
             public List<string> MetaNodes = new List<string>();
             public int Level = 1;
             public int SeasonPoints = 0;
+            public int SeasonPointsEarned = 0;
+            public int BattlepassLevel = 0;
             public int BestWave = 0;
             public string PlayerId = "";
             public string SteamId = "";
@@ -161,7 +223,11 @@ namespace NordInvasion.Managers
                     Titles = NIJson.GetStringArray(obj, "titles"),
                     Perks = NIJson.GetIntArray(obj, "perks"),
                     Meta = NIJson.GetStringArray(obj, "meta"),
+                    Cosmetics = NIJson.GetStringArray(obj, "cosmetics"),
+                    BattlepassLevel = NIJson.GetInt(obj, "battlepass_level"),
+                    SeasonPointsEarned = NIJson.GetInt(obj, "season_points_earned"),
                 };
+                BackendReady = true;
             }
             catch { return null; }
         }
@@ -189,6 +255,10 @@ namespace NordInvasion.Managers
             foreach (var b in data.Blueprints) if (!comp.Blueprints.Contains(b)) comp.Blueprints.Add(b);
             foreach (var t in data.Titles) if (!comp.Titles.Contains(t)) comp.Titles.Add(t);
             foreach (var m in data.Meta) if (!comp.MetaNodes.Contains(m)) comp.MetaNodes.Add(m);
+            if (data.Cosmetics != null)
+                foreach (var c in data.Cosmetics) if (!comp.Cosmetics.Contains(c)) comp.Cosmetics.Add(c);
+            comp.BattlepassLevel = data.BattlepassLevel;
+            comp.SeasonPointsEarned = data.SeasonPointsEarned;
 
             // перки-эффекты на агенте
             var perkComp = agent.GetComponent<Components.PerkAgentComponent>();
@@ -350,8 +420,11 @@ namespace NordInvasion.Managers
             public string[] Titles;
             public string[] Meta;
             public int[] Perks;
+            public string[] Cosmetics;
             public int Level;
             public int SeasonPoints;
+            public int SeasonPointsEarned;
+            public int BattlepassLevel;
             public int BestWave;
             public int Kills;
             public int Deaths;
@@ -417,6 +490,353 @@ namespace NordInvasion.Managers
             });
         }
 
+        // ===== Магазин / BattlePass / Кампания (Mechanic 12, 2, 18, 23, 26) =====
+        //
+        // Цена и наличие товара проверяет сервер (/api/shop/buy), клиент получает
+        // новый баланс + список наград ("granted"). Если бэкенда нет - покупка
+        // применяется локально, иначе одиночная игра была бы без магазина.
+
+        /// <summary>
+        /// Сообщение в игровой чат из фонового потока: кладём в очередь и отдаём в
+        /// OnMissionTick - InformationManager нельзя трогать из Task.Run.
+        /// </summary>
+        void SpawnArmoryChest(Agent main)
+        {
+            var scene = Mission.Current.Scene;
+            if (scene == null) return;
+            var pos = main.Position + main.LookDirection * 3f;
+            var entity = Machines.PropSpawner.SpawnWithFallback(scene, "ni_armory_chest",
+                Machines.PropSpawner.FallbackChest, pos);
+            if (entity == null) return;   // ни своего, ни vanilla-меша - просто нет ящика
+            entity.AddComponent(new Machines.NI_ArmoryUsable());
+            InformationManager.DisplayMessage(new InformationMessage(
+                "Armory chest is next to the spawn - press F for heal/ammo/repair kits", Colors.Cyan));
+        }
+
+        public void Notify(string message, uint color)
+        {
+            QueueUi(() => InformationManager.DisplayMessage(new InformationMessage(message, color)));
+        }
+
+        static void SplitGrant(string grant, out string kind, out int value, out string arg)
+        {
+            kind = (grant ?? "").Trim();
+            arg = "";
+            value = 0;
+            int colon = kind.IndexOf(':');
+            if (colon >= 0)
+            {
+                arg = kind.Substring(colon + 1).Trim();
+                kind = kind.Substring(0, colon).Trim();
+                int.TryParse(arg, out value);
+            }
+        }
+
+        /// <summary>
+        /// Применяет награды бэкенда на агенте. Сервер уже начислил gold/wood/metal/
+        /// blueprints в БД - здесь только то, что видно в миссии (heal/ammo/repair)
+        /// и локальное зеркало счёта (wood/metal/blueprint).
+        /// </summary>
+        public static void ApplyGrants(Agent agent, string[] granted)
+        {
+            if (agent == null || granted == null) return;
+            var comp = agent.GetComponent<PlayerGoldComponent>();
+            var build = Mission.Current != null ? Mission.Current.GetMissionBehavior<FortressBuildManager>() : null;
+
+            foreach (var raw in granted)
+            {
+                string kind, arg;
+                int value;
+                SplitGrant(raw, out kind, out value, out arg);
+
+                switch (kind)
+                {
+                    case "wood":
+                        comp?.AddWood(value);
+                        break;
+                    case "metal":
+                        comp?.AddMetal(value);
+                        break;
+                    case "gold":
+                        comp?.AddGold(value);
+                        break;
+                    case "blueprint":
+                        if (comp != null && !string.IsNullOrEmpty(arg) && !comp.Blueprints.Contains(arg))
+                        {
+                            comp.Blueprints.Add(arg);
+                            InformationManager.DisplayMessage(new InformationMessage($"Blueprint unlocked: {arg}", Colors.Cyan));
+                        }
+                        break;
+                    case "title":
+                        if (comp != null && !string.IsNullOrEmpty(arg) && !comp.Titles.Contains(arg))
+                        {
+                            comp.Titles.Add(arg);
+                            Mission.Current?.GetMissionBehavior<MetaProgressionManager>()?.ApplyCosmetics(agent, comp.Titles.ToArray());
+                        }
+                        break;
+                    case "skin":
+                        if (comp != null && !string.IsNullOrEmpty(arg) && !comp.Cosmetics.Contains(arg)) comp.Cosmetics.Add(arg);
+                        break;
+                    case "heal":
+                        if (value > 0) agent.SetHitPoints((int)System.Math.Min(agent.Health + value, agent.HealthLimit));
+                        break;
+                    case "ammo":
+                        build?.SpawnAmmoBox(agent.Position);
+                        break;
+                    case "repair":
+                        if (build != null && value > 0) build.RepairNearest(agent, value);
+                        break;
+                    case "season_points":
+                        if (comp != null) comp.SeasonPointsEarned += value; // тратит/копит сервер
+                        break;
+                }
+            }
+        }
+
+        static void ApplyBalances(PlayerGoldComponent comp, Dictionary<string, object> obj)
+        {
+            if (comp == null || obj == null || obj.Count == 0) return;
+            if (obj.ContainsKey("gold")) comp.Gold = NIJson.GetInt(obj, "gold", comp.Gold);
+            if (obj.ContainsKey("wood")) comp.Wood = NIJson.GetInt(obj, "wood", comp.Wood);
+            if (obj.ContainsKey("metal")) comp.Metal = NIJson.GetInt(obj, "metal", comp.Metal);
+            if (obj.ContainsKey("season_points")) comp.SeasonPoints = NIJson.GetInt(obj, "season_points", comp.SeasonPoints);
+            if (obj.ContainsKey("season_points_earned")) comp.SeasonPointsEarned = NIJson.GetInt(obj, "season_points_earned", comp.SeasonPointsEarned);
+            if (obj.ContainsKey("battlepass_level")) comp.BattlepassLevel = NIJson.GetInt(obj, "battlepass_level", comp.BattlepassLevel);
+            foreach (var b in NIJson.GetStringArray(obj, "blueprints")) if (!comp.Blueprints.Contains(b)) comp.Blueprints.Add(b);
+            foreach (var t in NIJson.GetStringArray(obj, "titles")) if (!comp.Titles.Contains(t)) comp.Titles.Add(t);
+            foreach (var c in NIJson.GetStringArray(obj, "cosmetics")) if (!comp.Cosmetics.Contains(c)) comp.Cosmetics.Add(c);
+        }
+
+        /// <summary>Покупка без бэкенда: те же цены/награды, но только до конца забега.</summary>
+        void BuyLocal(Agent agent, Models.ShopItem item)
+        {
+            var comp = agent.GetComponent<PlayerGoldComponent>();
+            if (comp == null) return;
+            if (item.Type == "blueprint" && item.Grants.Length > 0)
+            {
+                string k, arg;
+                int v;
+                SplitGrant(item.Grants[0], out k, out v, out arg);
+                if (k == "blueprint" && comp.Blueprints.Contains(arg))
+                {
+                    Notify($"{item.Name}: already unlocked", Colors.Yellow);
+                    return;
+                }
+            }
+            if (comp.Gold < item.Gold || comp.Wood < item.Wood || comp.Metal < item.Metal)
+            {
+                Notify($"Not enough resources: {item.Name} costs {item.Gold}g {item.Wood}w {item.Metal}m", Colors.Red);
+                return;
+            }
+            comp.Gold -= item.Gold;
+            comp.Wood -= item.Wood;
+            comp.Metal -= item.Metal;
+            ApplyGrants(agent, item.Grants);
+            Notify($"Bought {item.Name} (offline mode - not saved to profile)", Colors.Gold);
+        }
+
+        /// <summary>Покупка позиции каталога (серверная проверка цены -> начисление на складе).</summary>
+        public void BuyShopItem(Agent agent, string itemId, int qty = 1)
+        {
+            var item = Models.ShopCatalog.Get(itemId);
+            if (item == null) { Notify($"Unknown shop item: {itemId}", Colors.Red); return; }
+            if (agent == null) return;
+            var comp = agent.GetComponent<PlayerGoldComponent>();
+            if (comp == null) return;
+
+            if (!BackendReady)
+            {
+                BuyLocal(agent, item);
+                return;
+            }
+
+            EnsureIdentity(agent, comp);
+            string pid = comp.PlayerId, sid = comp.SteamId;
+            string name = agent.Name != null ? agent.Name.ToString() : "unknown";
+            if (qty < 1) qty = 1;
+            if (qty > 5) qty = 5;
+
+            Task.Run(async () =>
+            {
+                var body = await PostForm("/api/shop/buy",
+                    Kv("player_id", pid), Kv("steam_id", sid), Kv("name", name),
+                    Kv("item_id", itemId), Kv("qty", qty.ToString()));
+                var obj = NIJson.ParseObject(body);
+                var error = NIJson.GetString(obj, "error");
+                if (obj.Count == 0)
+                {
+                    Notify($"Shop unavailable - bought {item.Name} locally (не сохранится)", Colors.Yellow);
+                    BuyLocal(agent, item);
+                    return;
+                }
+                if (error != "")
+                {
+                    Notify($"Purchase refused: {error}", Colors.Red);
+                    return;
+                }
+                ApplyBalances(comp, obj);
+                ApplyGrants(agent, NIJson.GetStringArray(obj, "granted"));
+                BackendReady = true;
+                Notify($"Bought {item.Name} x{qty}", Colors.Gold);
+            });
+        }
+
+        /// <summary>Цены/наградные позиции тянутся с бэкенда, fallback - встроенная таблица.</summary>
+        public void RefreshShopCatalog()
+        {
+            Task.Run(async () =>
+            {
+                var body = await GetText("/api/shop/catalog");
+                var obj = NIJson.ParseObject(body);
+                if (NIJson.GetString(obj, "error") != "" || obj.Count == 0) return;
+                int n = Models.ShopCatalog.ReplaceWith(obj);
+                if (n > 0)
+                {
+                    BackendReady = true;
+                    QueueUi(() => InformationManager.DisplayMessage(
+                        new InformationMessage($"Shop catalog loaded from backend ({n} positions)", Colors.Cyan)));
+                }
+            });
+        }
+
+        // ----- BattlePass -----
+
+        public class BattlepassInfo
+        {
+            public int Level;
+            public int MaxLevel = 20;
+            public int Points;
+            public int PointsToNext;
+            public List<int> Claimed = new List<int>();
+            public string Line = "";
+        }
+
+        public static readonly BattlepassInfo Battlepass = new BattlepassInfo();
+
+        public void RefreshBattlepass(Agent agent)
+        {
+            var comp = agent != null ? agent.GetComponent<PlayerGoldComponent>() : null;
+            if (comp == null) return;
+            EnsureIdentity(agent, comp);
+            string pid = comp.PlayerId, sid = comp.SteamId;
+
+            Task.Run(async () =>
+            {
+                var body = await GetText("/api/battlepass/progress?player_id=" + Uri.EscapeDataString(pid)
+                                         + "&steam_id=" + Uri.EscapeDataString(sid ?? ""));
+                var obj = NIJson.ParseObject(body);
+                if (obj.Count == 0 || NIJson.GetString(obj, "error") != "") return;
+                Battlepass.Level = NIJson.GetInt(obj, "level");
+                Battlepass.MaxLevel = NIJson.GetInt(obj, "max_level", 20);
+                Battlepass.Points = NIJson.GetInt(obj, "points");
+                Battlepass.PointsToNext = NIJson.GetInt(obj, "points_to_next");
+                Battlepass.Claimed = new List<int>(NIJson.GetIntArray(obj, "claimed"));
+                Battlepass.Line = $"BattlePass {Battlepass.Level}/{Battlepass.MaxLevel} - next in {Battlepass.PointsToNext} SP";
+                comp.BattlepassLevel = Battlepass.Level;
+                QueueUi(() => InformationManager.DisplayMessage(new InformationMessage(Battlepass.Line, Colors.Cyan)));
+            });
+        }
+
+        /// <summary>Забирает награду уровня; если level &lt;= 0 - первый ещё не полученный.</summary>
+        public void ClaimBattlepass(Agent agent, int level)
+        {
+            var comp = agent != null ? agent.GetComponent<PlayerGoldComponent>() : null;
+            if (comp == null) return;
+            EnsureIdentity(agent, comp);
+            string pid = comp.PlayerId, sid = comp.SteamId;
+            string name = agent.Name != null ? agent.Name.ToString() : "unknown";
+
+            Task.Run(async () =>
+            {
+                var body = await PostForm("/api/battlepass/claim",
+                    Kv("player_id", pid), Kv("steam_id", sid), Kv("name", name),
+                    Kv("level", level.ToString()));
+                var obj = NIJson.ParseObject(body);
+                var error = NIJson.GetString(obj, "error");
+                if (obj.Count == 0) { Notify("BattlePass server unavailable", Colors.Red); return; }
+                if (error != "") { Notify($"BattlePass: {error}", Colors.Yellow); return; }
+                ApplyBalances(comp, obj);
+                ApplyGrants(agent, NIJson.GetStringArray(obj, "granted"));
+                Notify($"BattlePass reward: {NIJson.GetString(obj, "reward_name", "granted")}", Colors.Gold);
+                RefreshBattlepass(agent);
+            });
+        }
+
+        /// <summary>Первый не выданный доступный уровень battlepass (для кнопки "Claim").</summary>
+        public static int NextClaimableLevel()
+        {
+            for (int lvl = 1; lvl <= Battlepass.MaxLevel; lvl++)
+                if (lvl <= Battlepass.Level && !Battlepass.Claimed.Contains(lvl)) return lvl;
+            return -1;
+        }
+
+        // ----- Кампания: голоса и карта (Mechanic 15) -----
+
+        public class CampaignVillage
+        {
+            public int Id;
+            public string Name = "";
+            public string Owner = "";
+            public int Defense;
+            public int Votes;
+        }
+
+        public static readonly List<CampaignVillage> Villages = new List<CampaignVillage>();
+
+        public void VoteForVillage(Agent agent, int villageId)
+        {
+            var comp = agent != null ? agent.GetComponent<PlayerGoldComponent>() : null;
+            if (comp == null) return;
+            EnsureIdentity(agent, comp);
+            string pid = comp.PlayerId, sid = comp.SteamId;
+            string voter = string.IsNullOrEmpty(pid) ? (string.IsNullOrEmpty(sid) ? "unknown" : sid) : pid;
+
+            if (!BackendReady)
+            {
+                Notify($"Voted for village {villageId} (offline - голос не сохранён)", Colors.Yellow);
+                return;
+            }
+
+            Task.Run(async () =>
+            {
+                var body = await PostForm("/api/campaign/vote",
+                    Kv("voter", voter), Kv("village_id", villageId.ToString()));
+                var obj = NIJson.ParseObject(body);
+                var error = NIJson.GetString(obj, "error");
+                if (error != "") { Notify($"Campaign vote: {error}", Colors.Yellow); return; }
+                Notify($"Vote recorded for village {villageId}", Colors.Green);
+                RefreshCampaignMap();
+            });
+        }
+
+        public void RefreshCampaignMap()
+        {
+            Task.Run(async () =>
+            {
+                var body = await GetText("/api/campaign/villages");
+                var rows = NIJson.ParseObjectArrayFromJson(body);
+                if (rows.Count == 0) return;
+                var next = new List<CampaignVillage>();
+                foreach (var row in rows)
+                {
+                    next.Add(new CampaignVillage
+                    {
+                        Id = NIJson.GetInt(row, "id"),
+                        Name = NIJson.GetString(row, "name"),
+                        Owner = NIJson.GetString(row, "owner"),
+                        Defense = NIJson.GetInt(row, "defense"),
+                        Votes = NIJson.GetInt(row, "votes"),
+                    });
+                }
+                lock (Villages)
+                {
+                    Villages.Clear();
+                    Villages.AddRange(next);
+                }
+                BackendReady = true;
+            });
+        }
+
         // ===== Кампания (village battle report) =====
 
         public void OnCampaignWin()
@@ -436,13 +856,19 @@ namespace NordInvasion.Managers
                 .ToList();
             string csv = string.Join(",", players);
 
+            // Деревню атаки выбирает голосование сезона (механика 15), волна - из WaveManager
+            int villageId = UI.NI_CampaignMap_VM.LeadingVillageId();
+            if (villageId < 0) villageId = 0;
+            int wave = Mission.GetMissionBehavior<Behaviors.NordInvasionWaveManagerBehavior>()?.WaveNumber ?? 0;
+            bool won = wave >= Behaviors.NordInvasionWaveManagerBehavior.VictoryWave;
+
             Task.Run(async () =>
             {
                 await PostForm("/api/campaign/battle",
-                    Kv("village_id", "0"),
-                    Kv("won", "1"),
+                    Kv("village_id", villageId.ToString()),
+                    Kv("won", won ? "1" : "0"),
                     Kv("players", csv),
-                    Kv("wave_reached", "25"));
+                    Kv("wave_reached", wave.ToString()));
             });
         }
     }
@@ -461,6 +887,10 @@ namespace NordInvasion.Managers
 
         private Dictionary<Agent, PendingChoice> _pending = new Dictionary<Agent, PendingChoice>();
         private readonly Random _rand = new Random();
+        private readonly List<Machines.NI_PerkTotemUsable> _totems = new List<Machines.NI_PerkTotemUsable>();
+
+        /// <summary>Тройка, предложенная игроку (для UI/отладки). null - окна нет.</summary>
+        public UI.NI_PerkChoice_VM CurrentChoice { get; private set; }
 
         public override void OnMissionTick(float dt)
         {
@@ -477,9 +907,16 @@ namespace NordInvasion.Managers
                 if (now > kvp.Value.EndTime)
                 {
                     var perk = kvp.Value.Perks[Utils.NIMath.ClampInt(MBRandom.RandomInt(kvp.Value.Perks.Count), 0, kvp.Value.Perks.Count - 1)];
-                    ApplyPerk(kvp.Key, perk.Id);
                     InformationManager.DisplayMessage(new InformationMessage($"No choice in time - got: {perk.Name}", Colors.Yellow));
                     _pending.Remove(kvp.Key);
+                    ConsumeTotems();          // тотем больше не активен
+                    ApplyPerk(kvp.Key, perk.Id);
+                }
+                else
+                {
+                    // обратный отсчёт в тотемах/VM
+                    int left = (int)System.Math.Max(0f, kvp.Value.EndTime - now);
+                    if (CurrentChoice != null && CurrentChoice.TimeLeft != left) CurrentChoice.TimeLeft = left;
                 }
             }
         }
@@ -499,18 +936,79 @@ namespace NordInvasion.Managers
             var perks = Models.PerkDatabase.GetRandomThree(_rand);
             _pending[agent] = new PendingChoice { Perks = perks, EndTime = Mission.CurrentTime + ChoiceWindowSec };
 
-            // MVP: выбор через сообщения (Gauntlet-подключение - следующий шаг, см. docs/AUDIT.md).
+            // VM держит данные для будущего Gauntlet-экрана (NI_PerkChoice.xml)
+            CurrentChoice = new UI.NI_PerkChoice_VM();
+            CurrentChoice.SetPerks(perks[0], perks[1], perks[2]);
+
+            // MVP-ввод: три тотема рядом с фортом, F = выбор (Gauntlet-подключение - следующий шаг)
+            SpawnTotems(agent, perks);
+
             InformationManager.DisplayMessage(new InformationMessage(
-                $"PERK CHOICE ({(int)ChoiceWindowSec}s): 1) {perks[0].Name}  2) {perks[1].Name}  3) {perks[2].Name}", Colors.Gold));
+                $"PERK CHOICE ({(int)ChoiceWindowSec}s): 1) {perks[0].Name}  2) {perks[1].Name}  3) {perks[2].Name} - "
+                + "hit F on the glowing totem", Colors.Gold));
         }
 
-        /// <summary>Вызов от Gauntlet-кнопок (ExecuteChoose1/2/3 в NI_PerkChoice_VM).</summary>
+        /// <summary>
+        /// Ставит 3 тотема выбора у игрока. Если меша нет (см. docs/ART_TASKS.md),
+        /// PropSpawner даёт vanilla-fallback; если и он не поднялся - остаётся
+        /// только тайм-аут = случайный перк (окно выбора не ломается).
+        /// </summary>
+        void SpawnTotems(Agent agent, List<Models.PerkDefinition> perks)
+        {
+            var scene = Mission.Current != null ? Mission.Current.Scene : null;
+            if (scene == null) return;
+
+            for (int i = 0; i < perks.Count && i < 3; i++)
+            {
+                var pos = agent.Position + new Vec3((i - 1) * 2.5f, 2.5f, 0f);
+                var entity = Machines.PropSpawner.SpawnWithFallback(scene, "ni_brazier",
+                    Machines.PropSpawner.FallbackTorch, pos);
+                if (entity == null) continue;
+
+                var totem = new Machines.NI_PerkTotemUsable
+                {
+                    Slot = i,
+                    PerkLabel = $"{perks[i].Name} - {perks[i].Desc}",
+                };
+                entity.AddComponent(totem);
+                totem.Entity = entity;
+                _totems.Add(totem);
+            }
+        }
+
+        /// <summary>Есть ли у игрока активное окно выбора (для подсказки на F).</summary>
+        public bool HasPendingChoice(Agent agent) => agent != null && _pending.ContainsKey(agent);
+
+        /// <summary>
+        /// Тотемы гаснут, когда окно закрылось У ВСЕХ: в кооперативе выбор per-agent,
+        /// поэтому один сделанный выбор чужие тотемы не убирает.
+        /// </summary>
+        void ConsumeTotems()
+        {
+            if (_pending.Count > 0) return;
+            for (int i = _totems.Count - 1; i >= 0; i--)
+                _totems[i]?.Retire();
+            _totems.Clear();
+            CurrentChoice = null;
+        }
+
+        /// <summary>
+        /// Выбор от Gauntlet-кнопок / тотема (ExecuteChoose1..3 в NI_PerkChoice_VM).
+        /// index &lt; 0 - "Skip" = случайный перк из тройки.
+        /// </summary>
         public void ChooseForAgent(Agent agent, int index)
         {
+            if (agent == null) return;
             if (!_pending.TryGetValue(agent, out var choice)) return;
-            if (index < 0 || index >= choice.Perks.Count) return;
-            ApplyPerk(agent, choice.Perks[index].Id);
+
+            int pick = index;
+            if (pick < 0 || pick >= choice.Perks.Count)
+                pick = Utils.NIMath.ClampInt(MBRandom.RandomInt(choice.Perks.Count), 0, choice.Perks.Count - 1);
+
+            var perk = choice.Perks[pick];
             _pending.Remove(agent);
+            ConsumeTotems();   // no-op, пока у других игроков окно открыто
+            ApplyPerk(agent, perk.Id);
         }
 
         public void ApplyPerk(Agent agent, int perkId)
@@ -530,6 +1028,7 @@ namespace NordInvasion.Managers
                 InformationManager.DisplayMessage(new InformationMessage($"Perk applied: {def.Name} - {def.Desc}", Colors.Green));
                 Audio.NISound.PlayPerkApplied();
             }
+            if (!_pending.ContainsKey(agent)) ConsumeTotems();
         }
     }
 

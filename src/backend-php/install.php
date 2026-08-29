@@ -65,7 +65,16 @@ function seed(PDO $pdo): void
 
     $count = (int)$pdo->query('SELECT COUNT(*) FROM battlepass_rewards')->fetchColumn();
     if ($count === 0) {
-        $bp = [
+        // Источник истины - "battlepass" в shop_catalog.json. Fallback ниже -
+        // на случай, если каталог не скопировали при деплое.
+        $bp = [];
+        if (have_catalog()) {
+            foreach (BATTLEPASS_REWARDS as $r) {
+                $bp[] = [(int)($r['level'] ?? 0), (string)($r['type'] ?? 'gold'),
+                         (string)($r['id'] ?? ''), (string)($r['name'] ?? '')];
+            }
+        }
+        if (!$bp) $bp = [
             [1,  'gold',      '100',        '100 Gold'],
             [2,  'blueprint', 'wall_wood',  'Wooden Wall Blueprint'],
             [3,  'title',     'defender',   'Title: Defender'],
@@ -95,6 +104,39 @@ function seed(PDO $pdo): void
         echo "OK  skill_nodes: " . count($nodes) . "\n";
     }
 }
+
+/** Колонки таблицы (для идемпотентной миграции существующих баз). */
+function columns_of(PDO $pdo, string $table): array
+{
+    if (DB_DRIVER === 'sqlite') {
+        $rows = $pdo->query('PRAGMA table_info(' . $table . ')')->fetchAll();
+        return array_column($rows, 'name');
+    }
+    $st = $pdo->prepare('SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?');
+    $st->execute([DB_NAME, $table]);
+    return array_column($st->fetchAll(), 'COLUMN_NAME');
+}
+
+/**
+ * Идемпотентная доводка схемы баз, созданных до v2.1 (сезоны/BattlePass/магазин):
+ * добавляет отсутствующие колонки players. Новые таблицы создаёт schema.sql выше.
+ */
+function migrate(PDO $pdo): void
+{
+    $have = columns_of($pdo, 'players');
+    $need = [
+        'season_points_earned' => 'INT NOT NULL DEFAULT 0',
+        'cosmetics'            => 'TEXT',
+    ];
+    foreach ($need as $col => $colDdl) {
+        if (!in_array($col, $have, true)) {
+            $pdo->exec('ALTER TABLE players ADD COLUMN ' . $col . ' ' . $colDdl);
+            echo "OK  migrate: players.{$col}\n";
+        }
+    }
+}
+
+migrate($pdo);
 
 seed($pdo);
 echo "Готово. База: " . (DB_DRIVER === 'sqlite' ? DB_PATH : DB_NAME . " @ " . DB_HOST) . "\n";
