@@ -56,14 +56,15 @@ namespace NordInvasion.Behaviors
             if (perkComp != null) perkComp.DamageMod += 1f;
 
             InformationManager.DisplayMessage(new InformationMessage("LAST STAND! 10 sec slow-mo! Last player +100% damage! Crawl and revive!", Colors.Red));
-            // Music change
-            // Mission.Current.SetMusic("last_stand_music");
+            // Звук Last Stand (драм-ролл) - см. Audio/NISound.cs
+            Audio.NISound.PlayLastStandStart();
         }
 
         void EndLastStand(bool success)
         {
             _inLastStand = false;
             Mission.Current.SetTimeSpeed(1f);
+            Audio.NISound.PlayLastStandEnd();
             if (_lastAlive != null && _lastAlive.IsActive())
             {
                 _lastAlive.SetMaximumSpeedFactor(1f);

@@ -47,3 +47,18 @@ wine DedicatedCustomServer.exe /dedicatedcustomserverconfig DedicatedServer/Bann
 ## Примечание
 
 Dedicated Server бинарники не включены в репо из-за размера (~5GB). Скачай через SteamCMD и положи рядом. Если хочешь добавить в репо - используй Git LFS.
+
+## Персистентность (MySQL + PHP) на том же хосте
+
+Сохранение золота/прокачки между забегами — бэкенд из `src/backend-php/`
+(PHP 7.4+ + MySQL). Ставится на эту же машину (гайд: `src/backend-php/README.md`):
+
+1. `mysql -e "CREATE DATABASE nordinv CHARACTER SET utf8mb4;"` + юзер БД
+2. скопировать `src/backend-php/` в веб-контент (nginx :80 или IIS :8080)
+3. `config.php`: DB_* + `API_SECRET`
+4. `php install.php` → схема + начальные данные
+5. `bash tests/smoke.sh http://<host> <API_SECRET>`
+6. в моде: `PersistenceManager.BackendUrl = "http://127.0.0.1:8080";`
+   `PersistenceManager.ApiSecret = "<API_SECRET>";` → пересобрать dll
+
+Полное описание: `docs/BACKEND_PHP.md`.

@@ -1,0 +1,918 @@
+<?xml version="1.0"?>
+<scene name="mp_ni_castle_01" version="2">
+	<flora_bounding_rect min="0.000, 0.000" max="200.000, 200.000"/>
+	<levels>
+		<level name="base" mask="1"/>
+	</levels>
+	<environment_properties>
+		<property name="nav_mesh_auto_generated_" value="false"/>
+		<property name="physics_world_min" value="0.000, 0.000"/>
+		<property name="physics_world_max_" value="200.000, 200.000"/>
+		<property name="north_angle" value="0.000"/>
+		<property name="is_indoors" value="false"/>
+		<property name="disable_flora_billboards" value="false"/>
+		<property name="ground_color" value="0.000, 0.000, 0.000"/>
+		<property name="prt_multiplier" value="1.000"/>
+		<property name="prt_point_light_multiplier" value="1.000"/>
+		<property name="fog_start_distance" value="50.000"/>
+		<property name="prt_color_contrast" value="1.000"/>
+		<property name="scene_scale_multiplier" value="1.000"/>
+		<property name="prt_intensity_contrast" value="1.000"/>
+		<property name="prt_fallback_probe_index" value="-1, -1, -1"/>
+		<property name="enforced_color_grade" value=""/>
+		<atmosphere_properties>
+			<property name="atmosphere_name" value="scene_atmosphere"/>
+			<property name="wind" value="1.000, 0.000"/>
+			<property name="scene_fog_falloff_offset" value="0.000"/>
+		</atmosphere_properties>
+		<water_properties version="1">
+			<property name="water_level" value="-100.000"/>
+			<property name="water_strength" value="5.000"/>
+			<property name="water_wind_dependency" value="1.000"/>
+			<property name="water_material" value="water_default"/>
+			<property name="water_shallow_color" value="1.000, 1.000, 1.000"/>
+			<property name="water_deep_color" value="1.000, 1.000, 1.000"/>
+			<property name="water_exists" value="false"/>
+			<property name="place_water_probe" value="true"/>
+		</water_properties>
+		<out_of_bounds_effects_properties>
+			<property name="vignette_color" value="0.000, 0.500, 1.000"/>
+			<property name="vignette_alpha" value="0.000"/>
+		</out_of_bounds_effects_properties>
+	</environment_properties>
+	<entities>
+		<game_entity name="border_soft" old_prefab_name="border_soft">
+			<transform position="16.000, 16.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="border_soft" old_prefab_name="border_soft">
+			<transform position="100.000, 16.000, 0.000" rotation_euler="0.000, 0.000, 0.785"/>
+		</game_entity>
+		<game_entity name="border_soft" old_prefab_name="border_soft">
+			<transform position="184.000, 16.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="border_soft" old_prefab_name="border_soft">
+			<transform position="16.000, 100.000, 0.000" rotation_euler="0.000, 0.000, -0.785"/>
+		</game_entity>
+		<game_entity name="border_soft" old_prefab_name="border_soft">
+			<transform position="184.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 2.356"/>
+		</game_entity>
+		<game_entity name="border_soft" old_prefab_name="border_soft">
+			<transform position="16.000, 184.000, 0.000" rotation_euler="0.000, 0.000, -1.571"/>
+		</game_entity>
+		<game_entity name="border_soft" old_prefab_name="border_soft">
+			<transform position="100.000, 184.000, 0.000" rotation_euler="0.000, 0.000, -2.356"/>
+		</game_entity>
+		<game_entity name="border_soft" old_prefab_name="border_soft">
+			<transform position="184.000, 184.000, 0.000" rotation_euler="0.000, 0.000, -3.142"/>
+		</game_entity>
+		<game_entity name="empire_garden_wall_a1" old_prefab_name="empire_garden_wall_a1">
+			<transform position="55.000, 70.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="empire_garden_wall_a1" old_prefab_name="empire_garden_wall_a1">
+			<transform position="55.000, 78.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="empire_garden_wall_a1" old_prefab_name="empire_garden_wall_a1">
+			<transform position="55.000, 86.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="empire_garden_wall_a1" old_prefab_name="empire_garden_wall_a1">
+			<transform position="55.000, 110.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="empire_garden_wall_a1" old_prefab_name="empire_garden_wall_a1">
+			<transform position="55.000, 118.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="empire_garden_wall_a1" old_prefab_name="empire_garden_wall_a1">
+			<transform position="55.000, 126.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="empire_garden_wall_a1" old_prefab_name="empire_garden_wall_a1">
+			<transform position="55.000, 134.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="aserai_castle_wall_a_l3" old_prefab_name="aserai_castle_wall_a_l3">
+			<transform position="55.000, 96.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="aserai_castle_wall_a_l3" old_prefab_name="aserai_castle_wall_a_l3">
+			<transform position="55.000, 104.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="aserai_castle_tower_round_a_l3" old_prefab_name="aserai_castle_tower_round_a_l3">
+			<transform position="55.000, 66.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="aserai_castle_tower_round_a_l3" old_prefab_name="aserai_castle_tower_round_a_l3">
+			<transform position="55.000, 134.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="battania_castle_keep_a_l3_door_b" old_prefab_name="battania_castle_keep_a_l3_door_b">
+			<transform position="55.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 1.571"/>
+		</game_entity>
+		<game_entity name="torch_a_wm" old_prefab_name="torch_a_wm">
+			<transform position="25.000, 80.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="torch_a_wm" old_prefab_name="torch_a_wm">
+			<transform position="45.000, 80.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="torch_a_wm" old_prefab_name="torch_a_wm">
+			<transform position="25.000, 120.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="torch_a_wm" old_prefab_name="torch_a_wm">
+			<transform position="45.000, 120.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="vlandia_chest_c" old_prefab_name="vlandia_chest_c">
+			<transform position="30.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="fire_stones_bonfire" old_prefab_name="fire_stones_bonfire">
+			<transform position="40.000, 90.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="bd_barrel_a" old_prefab_name="bd_barrel_a">
+			<transform position="48.000, 108.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="bd_barrel_a" old_prefab_name="bd_barrel_a">
+			<transform position="48.000, 92.000, 0.000" rotation_euler="0.000, 0.000, 0.000"/>
+		</game_entity>
+		<game_entity name="wooden_platform_2_a" old_prefab_name="wooden_platform_2_a">
+			<transform position="60.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 0.000" scale="1.500, 1.500, 1.500"/>
+		</game_entity>
+		<game_entity name="wooden_platform_2_a" old_prefab_name="wooden_platform_2_a">
+			<transform position="64.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 0.000" scale="1.500, 1.500, 1.500"/>
+		</game_entity>
+		<game_entity name="wooden_platform_2_a" old_prefab_name="wooden_platform_2_a">
+			<transform position="68.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 0.000" scale="1.500, 1.500, 1.500"/>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="26.000, 91.000, 0.000" rotation_euler="0.000, 0.000, 1.389" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="29.000, 91.000, 0.000" rotation_euler="0.000, 0.000, 1.378" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="32.000, 91.000, 0.000" rotation_euler="0.000, 0.000, 1.364" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="35.000, 91.000, 0.000" rotation_euler="0.000, 0.000, 1.349" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="38.000, 91.000, 0.000" rotation_euler="0.000, 0.000, 1.332" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="41.000, 91.000, 0.000" rotation_euler="0.000, 0.000, 1.312" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="44.000, 91.000, 0.000" rotation_euler="0.000, 0.000, 1.288" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="47.000, 91.000, 0.000" rotation_euler="0.000, 0.000, 1.260" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="26.000, 94.000, 0.000" rotation_euler="0.000, 0.000, 1.449" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="29.000, 94.000, 0.000" rotation_euler="0.000, 0.000, 1.441" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="32.000, 94.000, 0.000" rotation_euler="0.000, 0.000, 1.432" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="35.000, 94.000, 0.000" rotation_euler="0.000, 0.000, 1.422" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="38.000, 94.000, 0.000" rotation_euler="0.000, 0.000, 1.410" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="41.000, 94.000, 0.000" rotation_euler="0.000, 0.000, 1.396" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="44.000, 94.000, 0.000" rotation_euler="0.000, 0.000, 1.380" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="47.000, 94.000, 0.000" rotation_euler="0.000, 0.000, 1.360" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="26.000, 97.000, 0.000" rotation_euler="0.000, 0.000, 1.510" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="29.000, 97.000, 0.000" rotation_euler="0.000, 0.000, 1.506" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="32.000, 97.000, 0.000" rotation_euler="0.000, 0.000, 1.501" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="35.000, 97.000, 0.000" rotation_euler="0.000, 0.000, 1.496" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="38.000, 97.000, 0.000" rotation_euler="0.000, 0.000, 1.490" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="41.000, 97.000, 0.000" rotation_euler="0.000, 0.000, 1.483" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="44.000, 97.000, 0.000" rotation_euler="0.000, 0.000, 1.474" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="47.000, 97.000, 0.000" rotation_euler="0.000, 0.000, 1.464" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="26.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 1.571" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="29.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 1.571" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="32.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 1.571" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="35.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 1.571" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="38.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 1.571" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="41.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 1.571" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="44.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 1.571" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="47.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 1.571" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-19.164, 90.449, 0.000" rotation_euler="0.000, 0.000, 1.396" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-31.872, 95.853, 0.000" rotation_euler="0.000, 0.000, 1.509" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-43.899, 104.001, 0.000" rotation_euler="0.000, 0.000, 1.621" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-54.790, 114.792, 0.000" rotation_euler="0.000, 0.000, 1.734" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-17.920, 114.981, 0.000" rotation_euler="0.000, 0.000, 1.847" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-27.008, 125.378, 0.000" rotation_euler="0.000, 0.000, 1.959" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-34.288, 137.949, 0.000" rotation_euler="0.000, 0.000, 2.072" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-39.396, 152.405, 0.000" rotation_euler="0.000, 0.000, 2.184" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-6.121, 136.525, 0.000" rotation_euler="0.000, 0.000, 2.297" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-9.776, 149.841, 0.000" rotation_euler="0.000, 0.000, 2.410" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-10.857, 164.328, 0.000" rotation_euler="0.000, 0.000, 2.522" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="-9.162, 179.566, 0.000" rotation_euler="0.000, 0.000, 2.635" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="13.881, 150.784, 0.000" rotation_euler="0.000, 0.000, 2.747" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="16.387, 164.363, 0.000" rotation_euler="0.000, 0.000, 2.860" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="21.720, 177.876, 0.000" rotation_euler="0.000, 0.000, 2.973" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="29.879, 190.856, 0.000" rotation_euler="0.000, 0.000, 3.085" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="38.095, 154.913, 0.000" rotation_euler="0.000, 0.000, -3.085" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="46.263, 166.047, 0.000" rotation_euler="0.000, 0.000, -2.973" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="56.946, 175.890, 0.000" rotation_euler="0.000, 0.000, -2.860" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="69.942, 184.024, 0.000" rotation_euler="0.000, 0.000, -2.747" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="61.692, 148.089, 0.000" rotation_euler="0.000, 0.000, -2.635" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="73.892, 154.557, 0.000" rotation_euler="0.000, 0.000, -2.522" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="87.795, 158.768, 0.000" rotation_euler="0.000, 0.000, -2.410" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="103.036, 160.433, 0.000" rotation_euler="0.000, 0.000, -2.297" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="79.964, 131.673, 0.000" rotation_euler="0.000, 0.000, -2.184" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="93.763, 132.185, 0.000" rotation_euler="0.000, 0.000, -2.072" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="108.113, 129.924, 0.000" rotation_euler="0.000, 0.000, -1.959" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="122.559, 124.787, 0.000" rotation_euler="0.000, 0.000, -1.847" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="89.269, 108.940, 0.000" rotation_euler="0.000, 0.000, -1.734" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="101.914, 103.393, 0.000" rotation_euler="0.000, 0.000, -1.621" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="113.849, 95.111, 0.000" rotation_euler="0.000, 0.000, -1.509" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="124.618, 84.198, 0.000" rotation_euler="0.000, 0.000, -1.396" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+		<game_entity name="mp_spawnpoint" old_prefab_name="mp_spawnpoint">
+			<visibility_masks>
+				<visibility_mask name="visible_only_when_editing" value="true"/>
+			</visibility_masks>
+			<tags>
+				<tag name="spawnpoint"/>
+			</tags>
+			<transform position="165.000, 100.000, 0.000" rotation_euler="0.000, 0.000, 3.142" scale="1.637, 1.637, 1.637"/>
+			<components>
+				<meta_mesh_component name="arrow_new_icon"/>
+			</components>
+		</game_entity>
+	</entities>
+</scene>

@@ -51,7 +51,9 @@ namespace NordInvasion.Components
             {
                 FallenCount++;
                 IsFallen = true;
-                Agent.SetActionChannel(0, ActionIndexCache.act_fall_down, false, 0, 0, 1f, 1f, 0f, false, -0.2f, 0, true);
+                // Визуал "упал" (ragdoll) - опционально, если нужен:
+                // AnimationChannel через ActionIndexCache.act_fall_down.
+                // Пока останавливаем агента и ждем медика.
                 Agent.SetMaximumSpeedFactor(0f);
                 return true; // fallen, not dead - can be revived
             }
@@ -63,7 +65,6 @@ namespace NordInvasion.Components
             IsFallen = false;
             Agent.SetHitPoints(50);
             Agent.SetMaximumSpeedFactor(1f);
-            Agent.SetActionChannel(0, ActionIndexCache.act_stand_up, false, 0, 0, 1f, 1f, 0f, false, -0.2f, 0, true);
             Stamina = 50f;
         }
 

@@ -46,19 +46,33 @@ namespace NordInvasion.Managers
 
         public void ApplyMetaBonuses(Agent agent, PersistenceManager.PlayerData data)
         {
-            // Apply skill tree bonuses from backend
-            if (data.Blueprints == null) return;
+            // Apply skill tree bonuses from backend (узлы мета-дерева, не чертежи)
+            if (data.Meta == null) return;
 
-            if (System.Array.Exists(data.Blueprints, b => b == "blacksmith_1"))
+            if (System.Array.Exists(data.Meta, n => n == "blacksmith_1"))
             {
                 var comp = agent.GetComponent<PersistenceManager.PlayerGoldComponent>();
                 if (comp != null) comp.Wood += 1;
             }
-            if (System.Array.Exists(data.Blueprints, b => b == "veteran_1"))
+            if (System.Array.Exists(data.Meta, n => n == "blacksmith_2"))
+            {
+                var comp = agent.GetComponent<PersistenceManager.PlayerGoldComponent>();
+                if (comp != null) comp.Metal += 2;
+            }
+            if (System.Array.Exists(data.Meta, n => n == "veteran_1"))
             {
                 agent.SetMaximumHitPoints((int)(agent.HealthLimit * 1.05f));
                 var comp = agent.GetComponent<PersistenceManager.PlayerGoldComponent>();
                 if (comp != null) comp.Gold += 100;
+            }
+            if (System.Array.Exists(data.Meta, n => n == "veteran_2"))
+            {
+                agent.SetMaximumHitPoints((int)(agent.HealthLimit * 1.1f));
+            }
+            if (System.Array.Exists(data.Meta, n => n == "engineer_1") || System.Array.Exists(data.Meta, n => n == "engineer_2"))
+            {
+                var perkComp = agent.GetComponent<Components.PerkAgentComponent>();
+                if (perkComp != null) perkComp.BarricadeMod += System.Array.Exists(data.Meta, n => n == "engineer_2") ? 0.2f : 0.1f;
             }
         }
 

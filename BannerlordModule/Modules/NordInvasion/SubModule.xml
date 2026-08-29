@@ -26,11 +26,24 @@
         </SubModule>
     </SubModules>
     <Xmls>
+        <!-- Пути относительны к папке ModuleData/ -->
         <XmlNode>
-            <XmlName id="MultiplayerScenes" path="ModuleData/MultiplayerScenes.xml"/>
+            <XmlName id="Characters" path="Characters.xml"/>
         </XmlNode>
         <XmlNode>
-            <XmlName id="MultiplayerMaps" path="ModuleData/MultiplayerMaps.xml"/>
+            <XmlName id="Items" path="Items.xml"/>
+        </XmlNode>
+        <XmlNode>
+            <XmlName id="SceneProps" path="SceneProps.xml"/>
+        </XmlNode>
+        <XmlNode>
+            <XmlName id="Missions" path="Missions.xml"/>
+        </XmlNode>
+        <XmlNode>
+            <XmlName id="MultiplayerScenes" path="MultiplayerScenes.xml"/>
+        </XmlNode>
+        <XmlNode>
+            <XmlName id="MultiplayerMaps" path="MultiplayerMaps.xml"/>
         </XmlNode>
     </Xmls>
 </Module>

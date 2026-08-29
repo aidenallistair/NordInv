@@ -1,4 +1,4 @@
-# Прогресс реализации - Bannerlord Better Edition 29 механик
+# Прогресс реализации - Bannerlord Better Edition, 29 механик
 
 ## Фаза 0: Подготовка (DONE)
 
@@ -11,77 +11,156 @@
 - [x] ModuleData/MultiplayerMaps.xml
 - [x] ModuleData/Missions.xml - миссия mp_nord_invasion
 - [x] ModuleData/Items.xml - torch, hammer, medical_kit, wood, metal, loot bag, blueprints, powder barrel, cosmetics
-- [x] ModuleData/SceneProps.xml - 25+ пропсов: foundation, wall, door, stakes, oil, brazier, spike, shield_wall, loot bag, treasury, ram, camp, tree, barrel, campfire, ballista, catapult, rock/log/oil/drawbridge traps, warehouse, cart, ammo box
+- [x] ModuleData/SceneProps.xml - 25+ пропсов
 - [x] ModuleData/GauntletUI/ - 5 UI XML: HUD, Shop, BuildMenu, PerkChoice, CampaignMap
 - [x] ModuleData/Languages/RU/ - перевод 20+ строк
 - [x] build_module.bat/.sh - скрипты сборки
 
 ## Фаза 1: Ядро - Волны, Спавн, Победа/Поражение (DONE)
 
-- [x] `Models/WaveDefinition.cs` - WaveState, WaveObjective, MutatorType, PerkDatabase 15 перков, MutatorDatabase 7 мутаторов
+- [x] `Models/WaveDefinition.cs` - WaveState, WaveObjective, MutatorType, PerkDatabase 13 перков, MutatorDatabase
 - [x] `Behaviors/NordInvasionWaveManagerBehavior.cs` - полный цикл:
-  - SetupWave() считает BotsTotal = 8+wave*2+players*2 * director multiplier
+  - SetupWave() считает BotsTotal = 8+wave*2+players*2 * director multiplier (кап 120)
   - SpawnWave() с учетом кавалерии после 10 волны, мутаторов, отрядов
   - Boss spawn каждые 5 волн + BossRush мутатор
-  - Objectives spawn
-  - OnBotKilled() - золото, скавенджинг wood/metal, физ-лут с босса, elemental combo, backend call
-  - OnAgentRemoved - Fallen vs Death (3 падения), director stress
+  - Objectives spawn (реальные: таран 2000 HP, 3 лагеря, эскорт, казна)
+  - OnBotKilled() - золото, скавенджинг, физ-лут с босса, elemental combo, backend call
+  - OnAgentRemoved - Fallen vs Death (3 падения), респавн-волны (каждые 4)
   - OnAgentHit - stamina, marked mutator, greedy steal
+  - **Победа (25 волн) и поражение реально завершают миссию** (`Mission.EndMission`)
 - [x] `Behaviors/NordInvasionDirectorBehavior.cs` - Stress 0-100, GetMultiplier() 0.8-1.2, relief ammo box
-- [x] `Behaviors/NordInvasionWeatherBehavior.cs` - SetRandomWeather() каждые 5 волн: fog, rain, snow, night, clear. Влияет на visibility, speed, fire arrows. Также содержит Objective, Mutator, Campaign behaviors
-- [x] `UI/HUD/NI_HUD_Behavior.cs` + `NI_HUD_VM` - WaveInfo, MutatorInfo, GoldInfo
-- [x] `Managers/PersistenceManager.cs` - PlayerGoldComponent Gold/Wood/Metal/Kills/Perks/Blueprints/Titles, OnKill backend POST, OnCampaignWin, OnAgentBuild adds components, PerkManager, LootManager
+- [x] `Behaviors/NordInvasionWeatherBehavior.cs` - SetRandomWeather() каждые 5 волн: fog, rain, snow, night, clear. Также Objective, Mutator, Campaign behaviors
+- [x] `UI/HUD/NI_HUD_Behavior.cs` + `NI_HUD_VM` - WaveInfo, MutatorInfo, GoldInfo (регистрация в SubModule)
+- [x] `Managers/PersistenceManager.cs` - PlayerGoldComponent Gold/Wood/Metal/Kills/Perks/Blueprints/Titles/IsCarryingLoot, OnKill backend POST, OnCampaignWin, EnsureComponents, PerkManager (15-сек окно выбора + тайм-аут), LootManager (реальный спавн мешка)
 
 ## Фаза 2: Combat & Fort (DONE)
 
-- [x] `Components/WoundStaminaComponent.cs` - Stamina 100-5 за удар <20 = -50% speed, Fallen 3 раза до смерти, Second Wind perk, Regen perk, Bleed chance
-- [x] `Components/RoleComponents.cs` - ClassComponent, MedicComponent TryRevive 5 сек F + Heal + LastStand check, EngineerComponent Repair +20 HP * perk, BannerComponent buff 15м 1.1x damage radius x2 с perk
-- [x] `Components/WoundStaminaComponent.cs` PerkAgentComponent - 15 перков, HpMod, DamageMod, BarricadeMod, GoldMod, HasPerk(), GetDamageWithPerks() Bloodlust
-- [x] `Machines/BarricadeMachines.cs` - BarricadeDestructible 800 HP burning, StakesTrap anti-cav horse die, TreasuryChest, LootBag, Campfire craft arrows + heal, Brazier light
-- [x] `Managers/FortressBuildManager.cs` - TryPlace Foundation 5 wood, Wall 3 wood, Door 5+2, Stakes 4, Oil 10+5, Brazier 2, ShieldWall 6, check warehouse stock, Repair, SpawnAmmoBox
-- [x] `Managers/FortressBuildManager.cs` ScavengeManager - 20% metal veteran+, 30% wood
-- [x] `Managers/FortressBuildManager.cs` SquadManager - SpawnShieldWallSquad leader+3 huscarl+3 archer, SpawnBerserkWedge
-- [x] `Machines/SiegeWeapons.cs` - Ballista pierce 3, Catapult AOE 5m 100 dmg, OilPot
-- [x] `Machines/ForgeUsable.cs` - Weapon tempering Sharpened +10% dmg, Hardened, Poison, Flaming
-- [x] `Machines/TrapMachines.cs` - RockTrap crush 5, LogTrap roll damage line, OilDitch spill+torch=fire 10 sec, Drawbridge cut flank
+- [x] `Components/WoundStaminaComponent.cs` - Stamina 100-5 за удар <20 = -30% speed, Fallen 3 раза до смерти, Second Wind perk, Regen perk, Bleed chance
+- [x] `Components/RoleComponents.cs` - ClassComponent, MedicComponent TryRevive 5 сек + Heal + LastStand check, EngineerComponent Repair +20 HP * perk, BannerComponent buff 15м 1.1x damage
+- [x] `Components/WoundStaminaComponent.cs` PerkAgentComponent - 13 перков, HpMod, DamageMod, BarricadeMod, GoldMod, GetDamageWithPerks() Bloodlust
+- [x] `Machines/BarricadeMachines.cs` - BarricadeDestructible (настраиваемый HP, горит, +2 wood при разрушении), StakesTrap anti-cav, TreasuryChest (принимает только несомый мешок), LootBag (pick-up -> скорость -30%), Campfire craft, Brazier
+- [x] `Managers/FortressBuildManager.cs` - TryPlace: REАЛЬНОЕ спавнение пропсов (PropSpawner + vanilla-fallback), экономика: личные ресурсы -> склад, Repair, SpawnAmmoBox
+- [x] `Managers/FortressBuildManager.cs` ScavengeManager - 20% metal veteran+, 30% wood, перк Scavenger x1.5
+- [x] `Managers/FortressBuildManager.cs` SquadManager - SpawnShieldWallSquad (leader=Formation.Captain), SpawnBerserkWedge
+- [x] `Machines/SiegeWeapons.cs` - Ballista, Catapult AOE, OilPot
+- [x] `Machines/ForgeUsable.cs` - Weapon tempering: Sharpened, Hardened, Poison, Flaming
+- [x] `Machines/TrapMachines.cs` - RockTrap, LogTrap, OilDitch, Drawbridge
 
 ## Фаза 3: Meta (DONE)
 
-- [x] `Managers/PersistenceManager.cs` PerkManager - ShowChoiceToAll() every 3 waves, random 3 perks, ApplyPerk()
-- [x] `Behaviors/BossPhaseBehavior.cs` - 3 фазы: 100-66% summon 2 minions, 66-33% buff nearby nords 1.5 speed + axes, <33% fire ground + explosion on death
-- [x] `Behaviors/CommanderBehavior.cs` - CommanderAgent, PlaceMarker Attack/Build/Retreat, IsNearMarker check +10% XP
-- [x] `Behaviors/MoraleBehavior.cs` - SquadMorale 100-40 leader death -15 normal, <30 flee, PlayerTeamMorale <30 speed 0.8
-- [x] `UI/NI_Shop_VM.cs` - Shop VM Gold/Wood/Metal, Buy Sword/Bow/Armor/Barricade/Stakes/Oil/Ballista, BuildMenu VM Foundation/Wall/Door/Stakes/Oil/Brazier/ShieldWall, PerkChoice VM 3 cards + 15 sec timer, CampaignMap VM, ClassSelect VM, Spectator VM
+- [x] `Managers/PersistenceManager.cs` PerkManager - ShowChoiceToAll() каждые 3 волны, 3 перка, окно 15 сек, тайм-аут = рандом, ChooseForAgent() для Gauntlet
+- [x] `Behaviors/BossPhaseBehavior.cs` - 3 фазы: 66% summon 2 minions, 33% fire ground + buff, взрыв при смерти + звуки
+- [x] `Behaviors/CommanderBehavior.cs` - CommanderAgent, PlaceMarker Attack/Build/Retreat, IsNearMarker
+- [x] `Behaviors/MoraleBehavior.cs` - SquadMorale, leader death -40, <30 паника, PlayerTeamMorale <30 = -15% speed
+- [x] `UI/NI_Shop_VM.cs` - Shop VM, BuildMenu VM, PerkChoice VM (3 карточки + иконки-слоты + таймер), CampaignMap VM, ClassSelect VM, Spectator VM
 - [x] `Models/WaveDefinition.cs` PerkDatabase, MutatorDatabase
 
 ## Фаза 4: Persistence, Campaign, Extra (DONE)
 
-- [x] `Managers/PersistenceManager.cs` LootManager - SpawnLootBag boss 500 gold bag carry to treasury speed 0.7
-- [x] `Components/ElementalComponent.cs` - Fire tick 5, Poison -30% speed, Ice 0.5 speed, Lightning chain 3 + x2 rain, Bleed stacks 5, OilComponent, ElementalWeaponComponent OnHit combo oil+fire=explosion
-- [x] `Managers/MetaProgressionManager.cs` - SkillTree 7 nodes blacksmith/veteran/engineer/leader, Ranks Wall/Savior/Jarl Slayer/Engineer Master with cosmetics, ApplyMetaBonuses, ApplyCosmetics
-- [x] `Behaviors/CampPhaseBehavior.cs` - Camp Phase every 5 waves 90 sec, Trader, Smith, Dynamic NPCs: Refugees escort +200 gold, Deserter +50% boss dmg 30 sec, ScavengerTrader rare blueprint 1000 gold, WoundedKnight fights 1 wave
-- [x] `Behaviors/SupplyBehavior.cs` - WoodStock 50 Max 50, Metal 20 Max 30, Warehouse Level 1->2 30+10 cost 100 limit auto-repair, Caravan every 3 waves 2 carts+4 guards vs 6 raiders ambush, reached +20+10, destroyed no resources 3 waves
-- [x] `Behaviors/SpectatorBettingBehavior.cs` - Bet, PlaceBet dead players, Killcam 3 sec slow-mo boss, OnWaveCompleted payout 1.5x, OnAgentRemoved killcam
-- [x] `Behaviors/LastStandBehavior.cs` - 1 alive + all fallen + 1 nord = Last Stand 10 sec slow-mo 0.3, last +100% damage +50% speed, crawl and revive
-- [x] `src/backend/main.py` - FastAPI with players, villages 8, seasons, battlepass, leaderboard, campaign battle, blueprint unlock
+- [x] `Managers/PersistenceManager.cs` LootManager - SpawnLootBag: реальный пропс + LootBagUsable, fallback авто-казна
+- [x] `Components/ElementalComponent.cs` - Fire tick, Poison, Ice, Lightning chain 3 + x2 rain, Bleed stacks, OilComponent, ElementalWeaponComponent combo oil+fire
+- [x] `Managers/MetaProgressionManager.cs` - SkillTree 7 нод, Ranks 4 титула, ApplyMetaBonuses, ApplyCosmetics
+- [x] `Behaviors/CampPhaseBehavior.cs` - Camp Phase каждые 5 волн 90 сек, Trader, Smith, Dynamic NPCs
+- [x] `Behaviors/SupplyBehavior.cs` - WoodStock/MetalStock, Warehouse Level 2, Caravan каждые 3 волны (прибытие/разрушение по tick)
+- [x] `Behaviors/SpectatorBettingBehavior.cs` - Bet, Killcam 3 сек слоу-мо босс, OnWaveCompleted payout 1.5x
+- [x] `Behaviors/LastStandBehavior.cs` - Last Stand 10 сек слоу-мо 0.3, last +100% damage, revive = успех
+- [x] `src/backend/main.py` - FastAPI: players, villages 8, seasons, battlepass, leaderboard, campaign battle, blueprint unlock
 
-## Фаза 5: Полировка (DONE 90% - без бинарных сцен)
+## Фаза 5: Полировка (DONE 95%)
 
-- [x] ModuleData/GauntletUI/ - 5 XML: HUD, Shop, BuildMenu, PerkChoice, CampaignMap
+- [x] ModuleData/GauntletUI/ - 5 XML (PerkChoice со слотами иконок)
 - [x] ModuleData/Items.xml - 15+ предметов
 - [x] ModuleData/SceneProps.xml - 25+ пропсов
 - [x] ModuleData/Languages/RU/ - перевод
+- [x] ModuleData/Sounds/README.md + Audio/NISound.cs - триггеры звуков (мутатор, босс, last stand, победа/поражение, караван, перк)
 - [x] build_module.bat/.sh - сборка и копирование в Bannerlord
-- [x] DedicatedServer/Bannerlord/ - DedicatedCustomServerConfig.xml + start scripts + README
-- [x] docs/ - BANNERLORD_PLAN_RU.md, BLSE_ANALYSIS.md, EXTRA_15_MECHANICS.md, IMPLEMENTED_30.md, STEP_BY_STEP_PLAN.md, LAUNCH_GUIDE.md, PROGRESS.md
-- [ ] SceneObj binary - нужно создать в Bannerlord Scene Editor (инструкция в LAUNCH_GUIDE.md) - 4 карты: town, castle, bridge, forest с entry points 0-31 игроки, 32-63 норды, 64 босс, пропсы chest, brazier, ballista, traps
-- [ ] Звуки для мутаторов, Last Stand музыка - добавить в ModuleData/Sounds/
-- [ ] Иконки перков - mesh + material
-- [ ] Тест Dedicated Server 2 клиента (нужен SteamCMD)
-- [ ] Релиз zip на NexusMods
+- [x] DedicatedServer/Bannerlord/ - DedicatedCustomServerConfig.xml (GameType=Multiplayer) + start scripts
+- [x] docs/ - полный комплект гайдов
+- [x] **4 сцены mp_ni_*** (session 2): `tools/gen_ni_scenes.py` сгенерировал scene.xscene
+      (65 entry points: 0-31 игроки, 32-63 норды, 64 босс) + пропсы + atmosphere.xml
+      для bridge/town/castle/forest. Формат сверен с vanilla-сценами.
+- [x] **tools/prepare_scenes.py** (session 2): копирует terrain.bin/flora.bin/ShaderCache
+      из vanilla-сцены (нужна установка Bannerlord - один раз на машине с игрой)
+- [x] **tools/validate_module.py** (session 2): валидация XML, SubModule-регистрации,
+      сцен, troop/item/prop ID (проходит: 0 ошибок)
+- [x] **Release zip** (session 2): `tools/make_release.py` ->
+      `dist/NiNordInvasion_v2_0_0_source.zip` (source-релиз, dll собирается локально)
+- [x] **Исправления session 2**: SubModule.xml регистрировал только 2 XML из 6
+      ( Characters/Items/Missions/SceneProps не грузились); MathF (нет в net472);
+      небезопасные API (Peer.Communicator, SetActionChannel, rotation.f, SetTeam);
+      csproj: System.Net.Http; killcam double-call; экономика строительства
+- [ ] Бинарный террейн сцен (terrain.bin) - `prepare_scenes.py` на машине с игрой
+      или сохранение в Scene Editor (5 минут на сцену)
+- [ ] Иконки перков - mesh + material (docs/ART_TASKS.md, UI готов)
+- [ ] Мешы ni_*-пропсов (docs/ART_TASKS.md; пока vanilla-fallback)
+- [ ] Тест Dedicated Server 2 клиента (нужен SteamCMD/Windows)
+- [ ] Загрузка на NexusMods (нужен аккаунт + dll)
 
-**Итого:** 24 C# файла + 10 XML + backend + docs = 29 механик без питомцев, все без BLSE, готово к компиляции в Bannerlord 1.2.10+.
+## Итог (session 2, 2026-08-29)
 
-**Следующий шаг для релиза:** Открыть Bannerlord Editor, создать 4 сцены mp_ni_*, расставить entry points и пропсы по гайду, сохранить, скомпилировать dll, тест Custom Battle.
+**Сделано:**
+1. Анализ: код - "скелет" (2938 строк C#, 24 файла), доки преувеличивали готовность
+   деталей. Найден и исправлен блокер: SubModule.xml не регистрировал 4 XML.
+2. Ядро: миссия реально заканчивается (победа/поражение), цели волн реальные
+   (таран/лагеря/эскорт/казна), физ-лут работает (мешок -> казна), респавн-волны,
+   перки с таймером, караван по tick, звуки через NISound (безопасно).
+3. Карты: 4 сцены сгенерированы (XML-часть). Осталось только бинарное
+   террейн-заполнение на машине с игрой (prepare_scenes.py).
+4. Инфраструктура: validate_module.py, make_release.py, prepare_scenes.py,
+   gen_ni_scenes.py. Валидация: 0 ошибок.
+5. Release: dist/NiNordInvasion_v2_0_0_source.zip.
 
-Код ядра полностью готов и соответствует плану фаз.
+**Следующий шаг для человека (нужна Windows + Bannerlord):**
+1. `python3 tools/prepare_scenes.py` (террейн)
+2. Собрать dll (csproj), при CS-ошибках - точечные правки по rgl_log
+3. Запустить Custom Battle mp_ni_bridge_01 -> mp_nord_invasion
+4. Прогнать тест-чеклист (LAUNCH_GUIDE.md), поправить ID частиц/звуков
+5. Upload на NexusMods
+
+## Session 3 (2026-08-29): персистенция через MySQL + PHP + Dedicated Server
+
+Задание: «сохранение вещей и прокачки через mysql+php+dedicated server».
+
+**Сделано:**
+
+1. **PHP-бэкенд** (`src/backend-php/`, новый):
+   - `config.php` — драйвер mysql/sqlite, креды, `API_SECRET` (X-NI-Secret),
+     allowlist чертежей.
+   - `lib.php` — PDO-синглтон, JSON out/fail, form+JSON body reader, проверка
+     секрета, идентичность игрока (`steam_<id>` / `name_<md5>`), профиль, XP/level.
+   - `index.php` — front controller, 16 маршрутов: player login/get, kill,
+     wave/complete, perk/record, run/save, blueprint/unlock, meta/unlock,
+     stat/increment (авто-титулы), campaign (villages/battle/vote), season,
+     leaderboard, battlepass, health.
+   - `schema.sql` + `install.php` — 7 таблиц (players c JSON-колонками perks/
+     blueprints/meta/titles, kill_log, villages, seasons, battlepass_rewards,
+     skill_nodes, campaign_votes c UNIQUE-голосом) + seed (8 деревень, сезон,
+     7 battlepass-наград, 7 skill nodes). DDL driver-aware (MySQL/SQLite).
+   - `README.md` — деплой Linux (nginx+php-fpm) и Windows (IIS) пошагово.
+   - `tests/smoke.sh` — 18 проверок API через curl.
+2. **C#-подключение** (рефакторинг под PHP-контракт):
+   - `PersistenceManager` переписан: статические `BackendUrl`/`ApiSecret`,
+     единый `PostForm` (X-NI-Secret), логин парсит реальный JSON (`NIJson`),
+     `ApplyProfile` применяет gold/wood/metal/perks/titles/meta к агенту,
+     события: OnKill(gold,is_boss), OnWaveCompletedFor, ReportPerk, SaveRun,
+     OnMedicRevive, OnBuildPlaced, UnlockBlueprint, UnlockMetaNode,
+     OnCampaignWin (csv из player_id).
+   - Новый `Utils/NIJson.cs` — JSON-парсер без зависимостей.
+   - `NIPeers`: `GetSteamId` (reflection-safe: SteamId64/Id/SessionId),
+     `MakePlayerId` (та же формула, что в PHP).
+   - Хуки: WaveManager (kill с реальным gold; +20g волны -> backend; победа/
+     поражение -> run/save), MedicComponent (revives), FortressBuildManager
+     (builds), PerkManager (perk/record), MetaProgressionManager (бонусы из
+     meta-узлов, не из blueprints — логический баг исправлен).
+3. **Доки:** `docs/BACKEND_PHP.md` (архитектура, API-таблица, решения),
+   LAUNCH_GUIDE (секция backend -> PHP+MySQL), README.
+4. **Релиз:** `make_release.py` включает `backend-php/`, зип пересобран.
+
+**Проверено в песочнице:** все 7 DDL + seed + все SQL-выражения API прогнаны
+через sqlite (GREATEST заменён на CASE для кросс-драйверности; UNIQUE KEY ->
+UNIQUE constraint в sqlite-ветке). C#: 31 файл, brace/paren-баланс OK.
+PHP-рантайма в песочнице нет — на хосте: `bash tests/smoke.sh`.
+
+**Осталось (человеку):** MySQL+PHP на dedicated-хосте (гайд в README),
+прописать URL/секрет в моде, smoke-тест, после — shop UI -> UnlockBlueprint,
+battlepass claim, сброс сезона.

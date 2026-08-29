@@ -1,6 +1,7 @@
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
 using System.Linq;
+using NordInvasion.Utils;
 
 namespace NordInvasion.Behaviors
 {
@@ -32,13 +33,13 @@ namespace NordInvasion.Behaviors
             total = System.Math.Max(total, 1);
 
             float aliveRatio = (float)alive / total;
-            if (aliveRatio < 0.3f) Stress = (int)MathF.Clamp(Stress - 2, 0, 100);
-            else if (aliveRatio > 0.8f) Stress = (int)MathF.Clamp(Stress + 1, 0, 100);
+            if (aliveRatio < 0.3f) Stress = NIMath.ClampInt(Stress - 2, 0, 100);
+            else if (aliveRatio > 0.8f) Stress = NIMath.ClampInt(Stress + 1, 0, 100);
         }
 
-        public void OnBotKilled() => Stress = (int)MathF.Clamp(Stress - 1, 0, 100);
-        public void OnPlayerDied() => Stress = (int)MathF.Clamp(Stress + 3, 0, 100);
-        public void OnWaveCompleted() => Stress = (int)MathF.Clamp(Stress - 5, 0, 100);
+        public void OnBotKilled() => Stress = NIMath.ClampInt(Stress - 1, 0, 100);
+        public void OnPlayerDied() => Stress = NIMath.ClampInt(Stress + 3, 0, 100);
+        public void OnWaveCompleted() => Stress = NIMath.ClampInt(Stress - 5, 0, 100);
 
         public float GetMultiplier()
         {

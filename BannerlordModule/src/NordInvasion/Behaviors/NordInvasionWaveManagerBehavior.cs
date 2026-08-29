@@ -11,6 +11,8 @@ namespace NordInvasion.Behaviors
 {
     public class NordInvasionWaveManagerBehavior : MissionBehavior
     {
+        public const int VictoryWave = 25;
+
         // Core state
         public int WaveNumber = 1;
         public int BotsAlive = 0;
@@ -26,6 +28,7 @@ namespace NordInvasion.Behaviors
         private Random _rand = new Random();
         private Team _nordTeam;
         private Team _playerTeam;
+        private float _endMissionAt = -1f;
 
         public override void OnMissionTick(float dt)
         {
@@ -35,6 +38,16 @@ namespace NordInvasion.Behaviors
                 _nordTeam = Mission.Teams.FirstOrDefault(t => t.Side == BattleSideEnum.Attacker);
             if (_playerTeam == null)
                 _playerTeam = Mission.PlayerTeam ?? Mission.Teams.FirstOrDefault(t => t.Side == BattleSideEnum.Defender);
+
+            // Отложенное завершение миссии (после сообщения о победе/поражении)
+            if (_endMissionAt > 0f && Mission.CurrentTime > _endMissionAt)
+            {
+                _endMissionAt = -1f;
+                Mission.Current.EndMission();
+                return;
+            }
+
+            if (_playerTeam == null || _nordTeam == null) return;
 
             // Preparing -> Spawning
             if (State == WaveState.Preparing && Mission.CurrentTime > NextWaveTime)
@@ -53,29 +66,98 @@ namespace NordInvasion.Behaviors
                 SpawnWave();
             }
 
-            // InProgress -> Completed
-            if (State == WaveState.InProgress && BotsAlive <= 0)
+            // InProgress -> Completed (все норды мертвы ИЛИ цель выполнена)
+            if (State == WaveState.InProgress)
             {
-                OnWaveCompleted();
-            }
-
-            // Check defeat
-            if (State == WaveState.InProgress && _playerTeam != null)
-            {
-                int alivePlayers = _playerTeam.ActiveAgents.Count(a => !IsFallen(a));
-                if (alivePlayers == 0 && !IsRespawnWave)
+                var objective = Mission.GetMissionBehavior<NordInvasionObjectiveBehavior>();
+                if (BotsAlive <= 0 || (objective != null && objective.ShouldEndWave()))
                 {
-                    State = WaveState.Failed;
-                    InformationManager.DisplayMessage(new InformationMessage("All players dead! Defeat!", Colors.Red));
-                    // TODO: End mission
+                    OnWaveCompleted();
+                    return;
+                }
+
+                // Провал цели = поражение
+                if (objective != null && objective.ObjectiveFailed)
+                {
+                    Defeat("Objective failed!");
+                    return;
+                }
+
+                // Check defeat
+                int alivePlayers = _playerTeam.ActiveAgents.Count(a => !IsFallen(a));
+                if (alivePlayers == 0)
+                {
+                    if (IsRespawnWave)
+                        RespawnAllPlayers();
+                    else
+                        Defeat("All players dead!");
                 }
             }
+
+            // HUD tick (живые норды)
+            var hud = Mission.GetMissionBehavior<UI.HUD.NI_HUD_Behavior>();
+            if (hud != null && State == WaveState.InProgress)
+                hud.UpdateWave(WaveNumber, BotsTotal, BotsAlive, Objective, Mutator);
+        }
+
+        void Defeat(string reason)
+        {
+            if (State == WaveState.Failed) return;
+            State = WaveState.Failed;
+            InformationManager.DisplayMessage(new InformationMessage($"{reason} DEFEAT! Swadia fell...", Colors.Red));
+            Audio.NISound.PlayDefeat();
+
+            // Сохраняем забег (поражение) для каждого живого игрока
+            var persist = Mission.GetMissionBehavior<PersistenceManager>();
+            if (persist != null && _playerTeam != null)
+            {
+                foreach (var agent in _playerTeam.ActiveAgents)
+                {
+                    if (!IsFallen(agent)) persist.SaveRun(agent, false, WaveNumber);
+                }
+            }
+            _endMissionAt = Mission.CurrentTime + 3f;
         }
 
         bool IsFallen(Agent agent)
         {
             var wound = agent.GetComponent<Components.WoundStaminaComponent>();
             return wound != null && wound.IsFallen;
+        }
+
+        /// <summary>Респавн-волна: все игроки возвращаются в бой.</summary>
+        void RespawnAllPlayers()
+        {
+            InformationManager.DisplayMessage(new InformationMessage("RESPAWN WAVE! All defenders return to the fight!", Colors.Cyan));
+
+            // Ищем ближайшую игроку точку спавна (0-31)
+            Vec3 basePos = default;
+            bool hasPos = false;
+            for (int i = 0; i < 32 && !hasPos; i++)
+            {
+                var e = Mission.Current.GetEntryPoint(i);
+                if (e != null) { basePos = e.Position; hasPos = true; }
+            }
+            if (!hasPos) return;
+
+            var fallen = _playerTeam.ActiveAgents.Where(a => IsFallen(a)).ToList();
+            foreach (var agent in fallen)
+            {
+                agent.GetComponent<Components.WoundStaminaComponent>()?.Revive();
+            }
+
+            // Мертвые (не в ActiveAgents) - переспаун
+            var troop = _playerTeam.ActiveAgents.FirstOrDefault()?.Character
+                ?? Game.Current.ObjectManager.GetObject<CharacterObject>("swadian_villager");
+            if (troop == null) return;
+            var deaths = _playerTeam.DeathAgents.Count(a => a != null);
+            for (int i = 0; i < deaths; i++)
+            {
+                var pos = basePos + new Vec3(i * 1.5f, 0f, 0f);
+                var agent = Mission.Current.SpawnAgent(new AgentBuildData(troop).Team(_playerTeam).InitialPosition(pos));
+                if (agent != null)
+                    Mission.GetMissionBehavior<PersistenceManager>()?.EnsureComponents(agent);
+            }
         }
 
         public void SetupWave(int waveNo)
@@ -98,11 +180,10 @@ namespace NordInvasion.Behaviors
             // Marked player for Odin mutator
             if (Mutator == MutatorType.Marked)
             {
-                var players = Mission.PlayerTeam?.ActiveAgents;
+                var players = _playerTeam?.ActiveAgents;
                 if (players != null && players.Count > 0)
                 {
                     var marked = players[_rand.Next(players.Count)];
-                    // Store in global or director
                     var director = Mission.GetMissionBehavior<NordInvasionDirectorBehavior>();
                     if (director != null) director.MarkedPlayer = marked;
                 }
@@ -126,7 +207,7 @@ namespace NordInvasion.Behaviors
             }
             if (Mutator == MutatorType.BossRush) baseCount += 5;
 
-            BotsTotal = Math.Min(baseCount, 120); // Bannerlord can handle 120
+            BotsTotal = Utils.NIMath.ClampInt(baseCount, 1, 120); // Bannerlord может держать ~120
             BotsAlive = BotsTotal;
 
             NextWaveTime = Mission.CurrentTime + 8f;
@@ -134,9 +215,13 @@ namespace NordInvasion.Behaviors
             InformationManager.DisplayMessage(new InformationMessage(
                 $"Wave {WaveNumber} preparing... {BotsTotal} Nords! Obj: {Objective} Mutator: {Mutator} {(IsRespawnWave ? "[RESPAWN WAVE]" : "")}", Colors.Cyan));
 
+            // Звук + стильное объявление мутатора
+            var mutatorBehavior = Mission.GetMissionBehavior<NordInvasionMutatorBehavior>();
+            mutatorBehavior?.ApplyMutator(Mutator);
+
             // Update HUD
             var hud = Mission.GetMissionBehavior<UI.HUD.NI_HUD_Behavior>();
-            hud?.UpdateWave(WaveNumber, BotsTotal, 0, Objective, Mutator);
+            hud?.UpdateWave(WaveNumber, BotsTotal, BotsAlive, Objective, Mutator);
         }
 
         void SpawnWave()
@@ -152,7 +237,7 @@ namespace NordInvasion.Behaviors
                 {
                     squadMgr.SpawnShieldWallSquad(32);
                     squadMgr.SpawnShieldWallSquad(40);
-                    BotsTotal = Math.Max(0, BotsTotal - 16);
+                    BotsTotal = Math.Max(0, BotsTotal - 12);
                     BotsAlive = BotsTotal;
                 }
             }
@@ -181,13 +266,9 @@ namespace NordInvasion.Behaviors
                     _spawnedNords.Add(agent);
                     // Apply mutator buffs
                     if (Mutator == MutatorType.Berserk)
-                    {
                         agent.SetMaximumSpeedFactor(1.5f);
-                        // No block - set AI to not block?
-                    }
                     // Register for morale
-                    var morale = Mission.GetMissionBehavior<MoraleBehavior>();
-                    // morale?.RegisterAgent(agent);
+                    Mission.GetMissionBehavior<MoraleBehavior>()?.RegisterAgentToNearestSquad(agent);
                 }
             }
 
@@ -208,12 +289,13 @@ namespace NordInvasion.Behaviors
         void SpawnBoss(int count = 1)
         {
             var bossTroop = GetBossTroop();
+            if (bossTroop == null) return;
             var entry = Mission.Current.GetEntryPoint(64);
             if (entry == null) return;
 
             for (int i = 0; i < count; i++)
             {
-                var pos = entry.Position + new Vec3(_rand.Next(-2, 2), _rand.Next(-2, 2), 0);
+                var pos = entry.Position + new Vec3(_rand.Next(-2, 2), _rand.Next(-2, 2), 0f);
                 var agent = Mission.Current.SpawnAgent(new AgentBuildData(bossTroop).Team(_nordTeam).InitialPosition(pos));
                 if (agent != null)
                 {
@@ -231,11 +313,14 @@ namespace NordInvasion.Behaviors
             State = WaveState.Completed;
             InformationManager.DisplayMessage(new InformationMessage($"Wave {WaveNumber} COMPLETED!", Colors.Green));
 
-            // Reward alive players +20 gold
+            // Reward alive players +20 gold (+ сохранение в бэкенд)
+            var persist = Mission.GetMissionBehavior<PersistenceManager>();
             foreach (var agent in _playerTeam.ActiveAgents)
             {
                 var comp = agent.GetComponent<PersistenceManager.PlayerGoldComponent>();
                 comp?.AddGold(20);
+                if (!IsFallen(agent))
+                    persist?.OnWaveCompletedFor(agent, WaveNumber, 20, 0, 0);
             }
 
             // Perk choice every 3 waves (Mechanic 1)
@@ -252,37 +337,37 @@ namespace NordInvasion.Behaviors
             var betting = Mission.GetMissionBehavior<SpectatorBettingBehavior>();
             betting?.OnWaveCompleted(WaveNumber, _playerTeam.ActiveAgents.ToList());
 
-            // Supply check
-            var supply = Mission.GetMissionBehavior<SupplyBehavior>();
-            // supply auto repair if level 2
-
-            if (WaveNumber >= 25)
+            if (WaveNumber >= VictoryWave)
             {
                 InformationManager.DisplayMessage(new InformationMessage("VICTORY! All 25 waves defeated! Swadia saved!", Colors.Gold));
-                State = WaveState.Completed;
-                // End mission after 10 sec
-                NextWaveTime = Mission.CurrentTime + 10f;
-                // TODO: Campaign win
-                var persistence = Mission.GetMissionBehavior<PersistenceManager>();
-                persistence?.OnCampaignWin();
+                Audio.NISound.PlayVictory();
+                Mission.GetMissionBehavior<PersistenceManager>()?.OnCampaignWin();
+
+                // Сохраняем забег (победа) для каждого игрока
+                var persistWin = Mission.GetMissionBehavior<PersistenceManager>();
+                foreach (var agent in _playerTeam.ActiveAgents)
+                    persistWin?.SaveRun(agent, true, VictoryWave);
+
+                _endMissionAt = Mission.CurrentTime + 5f;
+                return;
             }
-            else
-            {
-                WaveNumber++;
-                SetupWave(WaveNumber);
-            }
+
+            WaveNumber++;
+            SetupWave(WaveNumber);
         }
 
         public void OnBotKilled(Agent killed, Agent killer)
         {
+            if (killed == null || killed.Character == null) return;
             BotsAlive = Math.Max(0, BotsAlive - 1);
 
             // Director stress down
             Mission.GetMissionBehavior<NordInvasionDirectorBehavior>()?.OnBotKilled();
             Mission.GetMissionBehavior<MoraleBehavior>()?.OnAgentKilled(killed, killer);
 
+            int backendGold = 10;
             // Gold reward + scavenging
-            if (killer != null && killer.Team == _playerTeam)
+            if (killer != null && _playerTeam != null && killer.Team == _playerTeam)
             {
                 int gold = GetGoldForTroop(killed.Character);
                 if (Mutator == MutatorType.Greedy) gold *= 2;
@@ -294,6 +379,7 @@ namespace NordInvasion.Behaviors
                     if (goldComp.HasPerk(22)) gold = (int)(gold * 1.2f);
                     goldComp.AddGold(gold);
                     goldComp.Kills++;
+                    backendGold = gold;
 
                     InformationManager.DisplayMessage(new InformationMessage($"+{gold} gold! Total: {goldComp.Gold}", Colors.Yellow));
 
@@ -321,7 +407,7 @@ namespace NordInvasion.Behaviors
             }
 
             // Backend call (Mechanic 12)
-            Mission.GetMissionBehavior<PersistenceManager>()?.OnKill(killed, killer, WaveNumber);
+            Mission.GetMissionBehavior<PersistenceManager>()?.OnKill(killed, killer, WaveNumber, backendGold);
         }
 
         // Troop getters - load from CharacterObject
@@ -334,7 +420,8 @@ namespace NordInvasion.Behaviors
             else if (wave < 16) id = "ni_nord_huscarl";
             else id = "ni_nord_jarl_guard";
 
-            return Game.Current.ObjectManager.GetObject<CharacterObject>(id) ?? Game.Current.ObjectManager.GetObject<CharacterObject>("ni_nord_peasant");
+            return Game.Current.ObjectManager.GetObject<CharacterObject>(id)
+                ?? Game.Current.ObjectManager.GetObject<CharacterObject>("ni_nord_peasant");
         }
 
         CharacterObject GetCavalryTroop() => Game.Current.ObjectManager.GetObject<CharacterObject>("ni_nord_raider_mounted") ?? GetTroopForWave(1);
@@ -359,28 +446,36 @@ namespace NordInvasion.Behaviors
 
         public override void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, AgentState agentState, KillingBlow blow)
         {
-            if (affectedAgent.Team != null && affectedAgent.Team.Side == BattleSideEnum.Attacker)
-                OnBotKilled(affectedAgent, affectorAgent);
-            else if (affectedAgent.Team == _playerTeam)
+            if (affectedAgent == null || affectedAgent.Team == null) return;
+
+            if (affectedAgent.Team.Side == BattleSideEnum.Attacker)
             {
-                // Check if fallen or dead
-                var wound = affectedAgent.GetComponent<Components.WoundStaminaComponent>();
-                if (wound != null && wound.TryFall())
-                {
-                    // Fallen, not dead - can be revived
-                    InformationManager.DisplayMessage(new InformationMessage($"{affectedAgent.Name} fallen! Medic can revive!", Colors.Yellow));
-                }
-                else
-                {
-                    // Real death
-                    Mission.GetMissionBehavior<NordInvasionDirectorBehavior>()?.OnPlayerDied();
-                    Mission.GetMissionBehavior<MoraleBehavior>()?.OnAgentKilled(affectedAgent, affectorAgent);
-                }
+                OnBotKilled(affectedAgent, affectorAgent);
+                return;
+            }
+
+            if (_playerTeam == null || affectedAgent.Team != _playerTeam) return;
+
+            // Check if fallen or dead
+            var wound = affectedAgent.GetComponent<Components.WoundStaminaComponent>();
+            if (wound != null && wound.TryFall())
+            {
+                // Fallen, not dead - can be revived
+                InformationManager.DisplayMessage(new InformationMessage($"{affectedAgent.Name} fallen! Medic can revive!", Colors.Yellow));
+            }
+            else
+            {
+                // Real death
+                Mission.GetMissionBehavior<NordInvasionDirectorBehavior>()?.OnPlayerDied();
+                Mission.GetMissionBehavior<MoraleBehavior>()?.OnAgentKilled(affectedAgent, affectorAgent);
+                Mission.GetMissionBehavior<SpectatorBettingBehavior>()?.OnPlayerKilled(affectedAgent, affectorAgent);
             }
         }
 
         public override void OnAgentHit(Agent affectedAgent, Agent affectorAgent, in MissionWeapon attackerWeapon, in Blow blow, in AttackCollisionData collisionData)
         {
+            if (affectedAgent == null) return;
+
             // Stamina system (Mechanic 13)
             var wound = affectedAgent.GetComponent<Components.WoundStaminaComponent>();
             wound?.OnHit(blow.InflictedDamage);
@@ -391,16 +486,16 @@ namespace NordInvasion.Behaviors
                 var director = Mission.GetMissionBehavior<NordInvasionDirectorBehavior>();
                 if (director != null && director.MarkedPlayer != null && affectedAgent == director.MarkedPlayer)
                 {
-                    // All bots chase marked
+                    // Все боты преследуют помеченного
                     foreach (var bot in _spawnedNords.Where(a => a.IsActive()))
                     {
-                        // Set target
+                        bot.SetTargetForAI(affectedAgent);
                     }
                 }
             }
 
             // Greedy mutator steals gold on hit
-            if (Mutator == MutatorType.Greedy && affectedAgent.Team == _playerTeam)
+            if (Mutator == MutatorType.Greedy && _playerTeam != null && affectedAgent.Team == _playerTeam)
             {
                 var goldComp = affectedAgent.GetComponent<PersistenceManager.PlayerGoldComponent>();
                 if (goldComp != null && goldComp.Gold >= 5)

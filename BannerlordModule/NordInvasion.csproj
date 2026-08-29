@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="System.Net.Http" />
     <Reference Include="TaleWorlds.Core">
       <HintPath>..\..\..\..\..\Mount & Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Core.dll</HintPath>
     </Reference>

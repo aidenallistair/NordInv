@@ -1,5 +1,6 @@
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
+using TaleWorlds.Core;
 
 namespace NordInvasion.Machines
 {
@@ -37,8 +38,9 @@ namespace NordInvasion.Machines
         public override void OnUse(Agent userAgent, int index = -1)
         {
             base.OnUse(userAgent, index);
-            // Log rolls
-            var dir = this.GameEntity.GetGlobalFrame().rotation.f.AsVec3;
+            // Log rolls: damage along the entity's forward axis
+            var frame = this.GameEntity.GetGlobalFrame();
+            var dir = frame.rotation * new Vec3(1f, 0f, 0f);
             // Simulate rolling log damage line
             for (int i = 0; i < 10; i++)
             {

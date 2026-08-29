@@ -20,11 +20,28 @@ namespace NordInvasion.Behaviors
 
         public void RegisterSquad(int id, List<Agent> agents)
         {
-            _nordSquads.Add(new SquadMorale { SquadId = id, Agents = agents, Morale = 100f });
+            _nordSquads.Add(new SquadMorale { SquadId = id, Agents = agents ?? new List<Agent>(), Morale = 100f });
+        }
+
+        /// <summary>Региональный вариант: приписывает убитого к ближайшему зарегистрированному отряду.</summary>
+        public void RegisterAgentToNearestSquad(Agent agent)
+        {
+            if (agent == null) return;
+            SquadMorale nearest = null;
+            float bestDist = float.MaxValue;
+            foreach (var s in _nordSquads)
+            {
+                if (s.Agents.Count == 0) continue;
+                float d = agent.Position.Distance(s.Agents[0].Position);
+                if (d < bestDist) { bestDist = d; nearest = s; }
+            }
+            if (nearest != null && !nearest.Agents.Contains(agent))
+                nearest.Agents.Add(agent);
         }
 
         public void OnAgentKilled(Agent killed, Agent killer)
         {
+            if (killed == null) return;
             // Find squad of killed
             var squad = _nordSquads.FirstOrDefault(s => s.Agents.Contains(killed));
             if (squad != null)
@@ -35,18 +52,17 @@ namespace NordInvasion.Behaviors
                 else
                     squad.Morale -= 15f;
 
-                // Nearby allies lose morale
-                foreach (var ally in squad.Agents.Where(a => a.IsActive() && a.Position.Distance(killed.Position) < 10f))
+                // Panic check
+                if (squad.Morale < 30f)
                 {
-                    // Panic check
-                    if (squad.Morale < 30f)
+                    // TODO: настоящий flee - Formation.AI.SetBehavior(Flee)
+                    // (требует верификации API на целевой версии игры)
+                    foreach (var ally in squad.Agents.Where(a => a.IsActive()))
                     {
-                        // Flee
-                        ally.SetTeam(Mission.Current.Teams.First(t => t.Side == BattleSideEnum.Attacker), true);
-                        // Set flee behavior
-                        // ally.SetBehavior(Flee)
-                        InformationManager.DisplayMessage(new InformationMessage($"Nord squad {squad.SquadId} is panicking! Morale {squad.Morale}", Colors.Red));
+                        // Паника: отряд теряет скорость (видимый эффект)
+                        ally.SetMaximumSpeedFactor(0.85f);
                     }
+                    InformationManager.DisplayMessage(new InformationMessage($"Nord squad {squad.SquadId} is panicking! Morale {squad.Morale}", Colors.Red));
                 }
             }
 

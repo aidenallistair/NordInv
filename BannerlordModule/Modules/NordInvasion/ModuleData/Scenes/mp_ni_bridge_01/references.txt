@@ -1,0 +1,11 @@
+mesh arrow_new_icon
+mesh battania_castle_keep_a_l3_door_b
+mesh bd_barrel_a
+mesh border_soft
+mesh empire_garden_wall_a1
+mesh fence_empire_a
+mesh fire_stones_bonfire
+mesh mp_spawnpoint
+mesh torch_a_wm
+mesh vlandia_chest_c
+mesh wooden_platform_2_a

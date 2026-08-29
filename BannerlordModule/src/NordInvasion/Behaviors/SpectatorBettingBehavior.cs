@@ -1,6 +1,7 @@
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
 using System.Collections.Generic;
+using NordInvasion.Utils;
 
 namespace NordInvasion.Behaviors
 {
@@ -47,7 +48,7 @@ namespace NordInvasion.Behaviors
             // Pay bets
             foreach (var bet in _bets)
             {
-                bool won = survivors.Exists(a => a.MissionPeer?.Peer.Communicator.ToString() == bet.BetOnPlayerId);
+                bool won = survivors.Exists(a => NIPeers.GetPeerId(a) == bet.BetOnPlayerId);
                 if (won)
                 {
                     int winAmount = (int)(bet.Amount * 1.5f);
@@ -68,14 +69,7 @@ namespace NordInvasion.Behaviors
             }
         }
 
-        // Spectator camera is handled by Bannerlord's native SpectatorMissionBehavior
-        // We just need to enable it for dead players
-        public override void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, AgentState agentState, KillingBlow blow)
-        {
-            if (affectedAgent.Team == Mission.PlayerTeam)
-            {
-                OnPlayerKilled(affectedAgent, affectorAgent);
-            }
-        }
+        // Spectator camera is handled by Bannerlord's native SpectatorMissionBehavior.
+        // OnPlayerKilled вызывает WaveManager.OnAgentRemoved (только для реальных смертей).
     }
 }
