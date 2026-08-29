@@ -41,8 +41,4 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="src\NordInvasion\**\*.cs" />
-  </ItemGroup>
 </Project>
