@@ -1,0 +1,13 @@
+mesh arrow_new_icon
+mesh bd_barrel_a
+mesh bd_wood_heap_a
+mesh border_soft
+mesh fence_empire_a
+mesh fire_stones_bonfire
+mesh map_rock_groups_a
+mesh mp_spawnpoint
+mesh mushroom_tree_a
+mesh torch_a_wm
+mesh tree_root_b_pine
+mesh village_tent_e
+mesh vlandia_chest_c

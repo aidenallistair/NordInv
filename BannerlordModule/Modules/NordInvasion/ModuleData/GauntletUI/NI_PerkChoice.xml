@@ -4,25 +4,30 @@
       <Children>
         <TextWidget Text="Choose a Perk! Wave Bonus" HorizontalAlignment="Center" MarginTop="20" Brush="Singleplayer.Text"/>
         <TextWidget DataSource="{TimeLeft}" Text="Time: {TimeLeft}s" HorizontalAlignment="Center" MarginTop="50" Brush="Singleplayer.Text"/>
-        
-        <Widget SuggestedWidth="900" SuggestedHeight="400" HorizontalAlignment="Center" MarginTop="100" LayoutImp="Horizontal">
+
+        <Widget SuggestedWidth="900" SuggestedHeight="420" HorizontalAlignment="Center" MarginTop="90" LayoutImp="Horizontal">
           <Children>
-            <ButtonWidget DataSource="{Choose1Command}" SuggestedWidth="280" SuggestedHeight="350" MarginRight="20" Brush="Singleplayer.Button">
+            <ButtonWidget DataSource="{Choose1Command}" SuggestedWidth="280" SuggestedHeight="370" MarginRight="20" Brush="Singleplayer.Button">
               <Children>
-                <TextWidget DataSource="{Perk1Name}" MarginTop="20" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
-                <TextWidget DataSource="{Perk1Desc}" MarginTop="60" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
+                <!-- Иконка перка (появится после арт-задачи, см. docs/ART_TASKS.md).
+                     Пустой {Perk1Icon} = изображение не рендерится, текст смещается вниз. -->
+                <ImageWidget DataSource="{Perk1Icon}" SuggestedWidth="120" SuggestedHeight="120" HorizontalAlignment="Center" MarginTop="20"/>
+                <TextWidget DataSource="{Perk1Name}" MarginTop="160" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
+                <TextWidget DataSource="{Perk1Desc}" MarginTop="200" HorizontalAlignment="Center" Brush="Singleplayer.Text"/>
               </Children>
             </ButtonWidget>
-            <ButtonWidget DataSource="{Choose2Command}" SuggestedWidth="280" SuggestedHeight="350" MarginRight="20">
+            <ButtonWidget DataSource="{Choose2Command}" SuggestedWidth="280" SuggestedHeight="370" MarginRight="20">
               <Children>
-                <TextWidget DataSource="{Perk2Name}" MarginTop="20" HorizontalAlignment="Center"/>
-                <TextWidget DataSource="{Perk2Desc}" MarginTop="60" HorizontalAlignment="Center"/>
+                <ImageWidget DataSource="{Perk2Icon}" SuggestedWidth="120" SuggestedHeight="120" HorizontalAlignment="Center" MarginTop="20"/>
+                <TextWidget DataSource="{Perk2Name}" MarginTop="160" HorizontalAlignment="Center"/>
+                <TextWidget DataSource="{Perk2Desc}" MarginTop="200" HorizontalAlignment="Center"/>
               </Children>
             </ButtonWidget>
-            <ButtonWidget DataSource="{Choose3Command}" SuggestedWidth="280" SuggestedHeight="350">
+            <ButtonWidget DataSource="{Choose3Command}" SuggestedWidth="280" SuggestedHeight="370">
               <Children>
-                <TextWidget DataSource="{Perk3Name}" MarginTop="20" HorizontalAlignment="Center"/>
-                <TextWidget DataSource="{Perk3Desc}" MarginTop="60" HorizontalAlignment="Center"/>
+                <ImageWidget DataSource="{Perk3Icon}" SuggestedWidth="120" SuggestedHeight="120" HorizontalAlignment="Center" MarginTop="20"/>
+                <TextWidget DataSource="{Perk3Name}" MarginTop="160" HorizontalAlignment="Center"/>
+                <TextWidget DataSource="{Perk3Desc}" MarginTop="200" HorizontalAlignment="Center"/>
               </Children>
             </ButtonWidget>
           </Children>

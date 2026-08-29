@@ -1,5 +1,6 @@
 <DedicatedCustomServerConfig>
-  <GameType>NordInvasion</GameType>
+  <ServerName>Fianna NordInvasion Better Edition [Bannerlord] #1</ServerName>
+  <GameType>Multiplayer</GameType>
   <Map>mp_ni_bridge_01</Map>
   <Maps>
     <Map>mp_ni_town_01</Map>
@@ -7,12 +8,8 @@
     <Map>mp_ni_bridge_01</Map>
     <Map>mp_ni_forest_01</Map>
   </Maps>
-  <Missions>
-    <Mission>mp_nord_invasion</Mission>
-  </Missions>
   <MaxPlayers>32</MaxPlayers>
   <Port>7240</Port>
-  <ServerName>Fianna NordInvasion Better Edition [Bannerlord] #1</ServerName>
   <WelcomeMessage>Welcome to Nord Invasion Better Edition! Build, survive, fight! Press B for Build Menu</WelcomeMessage>
   <Modules>
     <Module Id="Native"/>
@@ -22,4 +19,5 @@
   </Modules>
   <AdminPassword>fianna_admin_123</AdminPassword>
   <AddToGameServersList>true</AddToGameServersList>
+  <IsNoRenderOnlyAIs>false</IsNoRenderOnlyAIs>
 </DedicatedCustomServerConfig>

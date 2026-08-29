@@ -91,9 +91,20 @@ API:
 
 Детали в `docs/BANNERLORD_PLAN_RU.md`
 
-## Следующие шаги
+## Следующие шаги (актуальный план, см. docs/PROGRESS.md)
 
-- Создать сцены `mp_ni_*` в Bannerlord Scene Editor
-- Создать CharacterObject XML для нордов
-- Дописать Gauntlet UI
-- Тест с 4 игроками через Bannerlord Co-op
+1. **Террейн карт (Windows + Bannerlord):** `python3 tools/prepare_scenes.py`
+   - сцены `mp_ni_*` уже сгенерированы (XML: 65 entry points + пропсы,
+     `tools/gen_ni_scenes.py`); скрипт дополнит их бинарным террейном из vanilla
+2. **Собрать dll:** открыть `BannerlordModule/NordInvasion.csproj`, прописать
+   HintPath, Build. При ошибках компиляции - точечные правки (API меняется
+   между патчами Bannerlord; см. BUILD_FROM_SOURCE.md)
+3. **Тест:** Custom Battle -> `mp_ni_bridge_01` -> `mp_nord_invasion`,
+   пройти чеклист из `docs/LAUNCH_GUIDE.md`
+4. **Арт-задачи** (docs/ART_TASKS.md): иконки перков, меши ni_*-пропсов,
+   кастомные звуки (UI и код уже готовы, ждут ассеты)
+5. **Тест Dedicated Server** (2 клиента, SteamCMD) -> upload на NexusMods
+   (source-зип уже собран: `dist/NiNordInvasion_v2_0_0_source.zip`)
+
+Полезные инструменты: `tools/validate_module.py` (проверка модуля перед релизом),
+`tools/make_release.py` (сборка релиз-зипа).

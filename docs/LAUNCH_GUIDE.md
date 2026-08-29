@@ -174,23 +174,25 @@ private string _backendUrl = "http://YOUR_SERVER_IP:8000";
    xcopy /Y BannerlordModule\Modules\NordInvasion\bin\Win64_Shipping_Client\NordInvasion.dll "C:\...\Bannerlord\Modules\NordInvasion\bin\Win64_Shipping_Client\"
    ```
 
-### Создание карты:
+### Карты (4 сцены уже сгенерированы):
 
-1. Установи Modding Kit (Steam Tools)
+Сцены `mp_ni_bridge_01`, `mp_ni_town_01`, `mp_ni_castle_01`, `mp_ni_forest_01`
+созданы в `ModuleData/Scenes/` (scene.xscene + atmosphere.xml):
+- entry points: 0-31 игроки (западный форт), 32-63 норды (кольцо), 64 босс
+- пропсы: факелы, казна, костер, бочки, стены/ворота/деревья (vanilla prefab'ы)
 
-2. Запусти `Editor` -> New Scene -> Terrain plain
+Осталось только **бинарное террейн-заполнение** (один раз, на машине с игрой):
 
-3. Place -> Entry Points:
-   - 0-31 в форте (игроки)
-   - 32-63 вокруг (норды)
-   - 64 босс
+```bash
+python3 tools/prepare_scenes.py            # копирует terrain.bin/flora.bin/ShaderCache
+python3 tools/prepare_scenes.py --source mp_ye_battle_01
+```
 
-4. Place -> Scene Props:
-   - `ni_armory_chest`, `ni_brazier`, `ni_foundation_wood`, `ni_stakes`, `ballista`, `rock_trap`
+либо открой сцену в Scene Editor (Launcher -> Tools -> Editor) и сохрани -
+редактор перегенерирует террейн и navmesh сам.
 
-5. Save as `mp_ni_yourmap`, скопируй `scene.xscene` + `scene_*.xml` в `ModuleData/Scenes/`
-
-6. Добавь в `ModuleData/MultiplayerScenes.xml` и `MultiplayerMaps.xml`
+Если хочешь свою карту: `python3 tools/gen_ni_scenes.py` как шаблон,
+разметка пропсов в `map_*()` внутри скрипта.
 
 ### Тестирование:
 

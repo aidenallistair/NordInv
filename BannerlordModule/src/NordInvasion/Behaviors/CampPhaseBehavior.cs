@@ -1,5 +1,6 @@
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
+using TaleWorlds.Core;
 
 namespace NordInvasion.Behaviors
 {

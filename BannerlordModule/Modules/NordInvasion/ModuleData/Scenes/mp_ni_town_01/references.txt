@@ -1,0 +1,11 @@
+mesh arrow_new_icon
+mesh bd_barrel_a
+mesh bd_wood_heap_a
+mesh border_soft
+mesh fence_empire_a
+mesh fire_stones_bonfire
+mesh mp_spawnpoint
+mesh sturgia_house_a_stair
+mesh torch_a_wm
+mesh village_tent_e
+mesh vlandia_chest_c

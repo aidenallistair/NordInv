@@ -78,20 +78,31 @@ namespace NordInvasion.UI
 
     public class NI_PerkChoice_VM : ViewModel
     {
+        // Префикс пути к иконкам. Пока меши не готовы (docs/ART_TASKS.md) - пусто,
+        // UI показывает только текст. Когда меши+материалы будут импортированы:
+        // IconPathPrefix = "Modules/NordInvasion/Textures/PerkIcons/"
+        public static string IconPathPrefix = "";
+
         private string _perk1Name = "Iron Skin +15% HP";
         private string _perk1Desc = "Survivor branch";
+        private string _perk1Icon = "";
         private string _perk2Name = "Bloodlust";
         private string _perk2Desc = "Damage when wounded";
+        private string _perk2Icon = "";
         private string _perk3Name = "Engineer +30% HP barricades";
         private string _perk3Desc = "Tactician branch";
+        private string _perk3Icon = "";
         private int _timeLeft = 15;
 
         [DataSourceProperty] public string Perk1Name { get => _perk1Name; set { _perk1Name = value; OnPropertyChanged(nameof(Perk1Name)); } }
         [DataSourceProperty] public string Perk1Desc { get => _perk1Desc; set { _perk1Desc = value; OnPropertyChanged(nameof(Perk1Desc)); } }
+        [DataSourceProperty] public string Perk1Icon { get => _perk1Icon; set { _perk1Icon = value; OnPropertyChanged(nameof(Perk1Icon)); } }
         [DataSourceProperty] public string Perk2Name { get => _perk2Name; set { _perk2Name = value; OnPropertyChanged(nameof(Perk2Name)); } }
         [DataSourceProperty] public string Perk2Desc { get => _perk2Desc; set { _perk2Desc = value; OnPropertyChanged(nameof(Perk2Desc)); } }
+        [DataSourceProperty] public string Perk2Icon { get => _perk2Icon; set { _perk2Icon = value; OnPropertyChanged(nameof(Perk2Icon)); } }
         [DataSourceProperty] public string Perk3Name { get => _perk3Name; set { _perk3Name = value; OnPropertyChanged(nameof(Perk3Name)); } }
         [DataSourceProperty] public string Perk3Desc { get => _perk3Desc; set { _perk3Desc = value; OnPropertyChanged(nameof(Perk3Desc)); } }
+        [DataSourceProperty] public string Perk3Icon { get => _perk3Icon; set { _perk3Icon = value; OnPropertyChanged(nameof(Perk3Icon)); } }
         [DataSourceProperty] public int TimeLeft { get => _timeLeft; set { _timeLeft = value; OnPropertyChanged(nameof(TimeLeft)); } }
 
         private int[] _perkIds = new int[3];
@@ -101,16 +112,24 @@ namespace NordInvasion.UI
             Perk1Name = p1.Name; Perk1Desc = p1.Desc; _perkIds[0] = p1.Id;
             Perk2Name = p2.Name; Perk2Desc = p2.Desc; _perkIds[1] = p2.Id;
             Perk3Name = p3.Name; Perk3Desc = p3.Desc; _perkIds[2] = p3.Id;
+            Perk1Icon = IconPathFor(p1.Icon);
+            Perk2Icon = IconPathFor(p2.Icon);
+            Perk3Icon = IconPathFor(p3.Icon);
         }
 
-        public void ExecuteChoose1() { Apply(_perkIds[0]); }
-        public void ExecuteChoose2() { Apply(_perkIds[1]); }
-        public void ExecuteChoose3() { Apply(_perkIds[2]); }
+        static string IconPathFor(string iconKey) =>
+            string.IsNullOrEmpty(IconPathPrefix) ? "" : IconPathPrefix + iconKey + ".dds";
 
-        void Apply(int id)
+        public void ExecuteChoose1() { Apply(0); }
+        public void ExecuteChoose2() { Apply(1); }
+        public void ExecuteChoose3() { Apply(2); }
+
+        void Apply(int slot)
         {
             var agent = Mission.Current?.MainAgent;
-            if (agent != null) Mission.Current.GetMissionBehavior<PerkManager>()?.ApplyPerk(agent, id);
+            if (agent == null) return;
+            // Слот 0/1/2 -> текущий выбор из PerkManager
+            Mission.Current.GetMissionBehavior<PerkManager>()?.ChooseForAgent(agent, slot);
             // Close UI
         }
     }

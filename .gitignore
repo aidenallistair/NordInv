@@ -1,0 +1,9 @@
+# Backend
+ni_better.db
+*.db
+# Build
+bin/
+obj/
+*.dll
+# OS
+.DS_Store

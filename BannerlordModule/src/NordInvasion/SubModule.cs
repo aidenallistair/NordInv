@@ -15,7 +15,7 @@ namespace NordInvasion
         {
             Instance = this;
             base.OnSubModuleLoad();
-            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.0 - 30 mechanics Loaded!", Colors.Green));
+            InformationManager.DisplayMessage(new InformationMessage("Nord Invasion Better Edition v2.0 - 29 mechanics Loaded!", Colors.Green));
         }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
@@ -35,6 +35,7 @@ namespace NordInvasion
             if (mission.SceneName != null && mission.SceneName.StartsWith("mp_ni_"))
             {
                 // Core - original 15
+                mission.AddMissionBehavior(new UI.HUD.NI_HUD_Behavior());
                 mission.AddMissionBehavior(new NordInvasionWaveManagerBehavior());
                 mission.AddMissionBehavior(new NordInvasionDirectorBehavior());
                 mission.AddMissionBehavior(new NordInvasionWeatherBehavior());
@@ -60,7 +61,7 @@ namespace NordInvasion
                 mission.AddMissionBehavior(new LastStandBehavior()); // 29
                 mission.AddMissionBehavior(new SupplyBehavior()); // 30
 
-                InformationManager.DisplayMessage(new InformationMessage($"Nord Invasion Better Edition 30 mechanics: {mission.SceneName} Wave 1 | B=Build N=Shop M=Medic R=Commander", Colors.Cyan));
+                InformationManager.DisplayMessage(new InformationMessage($"Nord Invasion Better Edition 29 mechanics: {mission.SceneName} Wave 1 | B=Build N=Shop M=Medic R=Commander", Colors.Cyan));
             }
         }
 

@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
 using System.Collections.Generic;
+using System.Linq;
+using NordInvasion.Utils;
+using TaleWorlds.Core;
 
 namespace NordInvasion.Managers
 {
@@ -20,6 +23,8 @@ namespace NordInvasion.Managers
             public int Metal = 0;
             public int Kills = 0;
             public int Deaths = 0;
+            public bool IsCarryingLoot = false; // Mechanic 8: несет мешок босса
+            public int CarriedLootValue = 0;
             public List<int> Perks = new List<int>();
             public List<string> Blueprints = new List<string>();
             public List<string> Titles = new List<string>();
@@ -45,8 +50,8 @@ namespace NordInvasion.Managers
                 {
                     var content = new FormUrlEncodedContent(new[]
                     {
-                        new System.Collections.Generic.KeyValuePair<string, string>("player_id", killer.MissionPeer?.Peer.Communicator.ToString() ?? "local"),
-                        new System.Collections.Generic.KeyValuePair<string, string>("player_name", killer.Name.ToString()),
+                        new System.Collections.Generic.KeyValuePair<string, string>("player_id", NIPeers.GetPeerId(killer)),
+                        new System.Collections.Generic.KeyValuePair<string, string>("player_name", killer.Name != null ? killer.Name.ToString() : "unknown"),
                         new System.Collections.Generic.KeyValuePair<string, string>("killed_troop", killed.Character?.StringId ?? "unknown"),
                         new System.Collections.Generic.KeyValuePair<string, string>("gold_reward", "10"),
                         new System.Collections.Generic.KeyValuePair<string, string>("wave", wave.ToString()),
@@ -55,7 +60,7 @@ namespace NordInvasion.Managers
                 }
                 catch (Exception ex)
                 {
-                    Debug.Print($"Backend kill error: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Backend kill error: {ex.Message}");
                 }
             });
         }
@@ -83,16 +88,21 @@ namespace NordInvasion.Managers
         {
             base.OnAgentBuild(agent, banner);
             if (agent.IsPlayerControlled || (Mission.PlayerTeam != null && agent.Team == Mission.PlayerTeam))
-            {
-                if (agent.GetComponent<PlayerGoldComponent>() == null)
-                    agent.AddComponent(new PlayerGoldComponent(agent));
-                if (agent.GetComponent<Components.WoundStaminaComponent>() == null)
-                    agent.AddComponent(new Components.WoundStaminaComponent(agent));
-                if (agent.GetComponent<Components.PerkAgentComponent>() == null)
-                    agent.AddComponent(new Components.PerkAgentComponent(agent));
-                if (agent.GetComponent<Components.ElementalWeaponComponent>() == null)
-                    agent.AddComponent(new Components.ElementalWeaponComponent(agent, Components.ElementalType.None));
-            }
+                EnsureComponents(agent);
+        }
+
+        /// <summary>Гарантирует наличие игровых компонентов (для переспауненных агентов).</summary>
+        public void EnsureComponents(Agent agent)
+        {
+            if (agent == null) return;
+            if (agent.GetComponent<PlayerGoldComponent>() == null)
+                agent.AddComponent(new PlayerGoldComponent(agent));
+            if (agent.GetComponent<Components.WoundStaminaComponent>() == null)
+                agent.AddComponent(new Components.WoundStaminaComponent(agent));
+            if (agent.GetComponent<Components.PerkAgentComponent>() == null)
+                agent.AddComponent(new Components.PerkAgentComponent(agent));
+            if (agent.GetComponent<Components.ElementalWeaponComponent>() == null)
+                agent.AddComponent(new Components.ElementalWeaponComponent(agent, Components.ElementalType.None));
         }
 
         public async Task<PlayerData> LoginPlayer(string steamId, string name)
@@ -126,11 +136,43 @@ namespace NordInvasion.Managers
     // Perk Manager Mechanic 1
     public class PerkManager : MissionBehavior
     {
-        private Random _rand = new Random();
+        // Окно выбора: 15 сек (как в NI_PerkChoice_VM)
+        private const float ChoiceWindowSec = 15f;
+
+        private class PendingChoice
+        {
+            public List<Models.PerkDefinition> Perks;
+            public float EndTime;
+        }
+
+        private Dictionary<Agent, PendingChoice> _pending = new Dictionary<Agent, PendingChoice>();
+
+        public override void OnMissionTick(float dt)
+        {
+            if (Mission.PlayerTeam == null) return;
+            var now = Mission.CurrentTime;
+
+            // Убранные агенты
+            foreach (var kvp in _pending.ToList())
+                if (!kvp.Key.IsActive()) _pending.Remove(kvp.Key);
+
+            // Тайм-аут: не выбрал за 15 сек - рандомный перк
+            foreach (var kvp in _pending.ToList())
+            {
+                if (now > kvp.Value.EndTime)
+                {
+                    var perk = kvp.Value.Perks[Utils.NIMath.ClampInt(MBRandom.RandomInt(kvp.Value.Perks.Count), 0, kvp.Value.Perks.Count - 1)];
+                    ApplyPerk(kvp.Key, perk.Id);
+                    InformationManager.DisplayMessage(new InformationMessage($"No choice in time - got: {perk.Name}", Colors.Yellow));
+                    _pending.Remove(kvp.Key);
+                }
+            }
+        }
 
         public void ShowChoiceToAll()
         {
-            foreach (var agent in Mission.PlayerTeam.ActiveAgents)
+            if (Mission.PlayerTeam == null) return;
+            foreach (var agent in Mission.PlayerTeam.ActiveAgents.ToList())
             {
                 ShowChoice(agent);
             }
@@ -138,11 +180,22 @@ namespace NordInvasion.Managers
 
         public void ShowChoice(Agent agent)
         {
+            if (agent == null || _pending.ContainsKey(agent)) return;
             var perks = Models.PerkDatabase.GetRandomThree(_rand);
-            // Open Gauntlet UI NI_PerkChoice_VM with 3 perks
-            InformationManager.DisplayMessage(new InformationMessage($"Perk choice: {perks[0].Name} / {perks[1].Name} / {perks[2].Name} - Press 1-3", Colors.Gold));
-            // For MVP, auto-apply first perk
-            ApplyPerk(agent, perks[0].Id);
+            _pending[agent] = new PendingChoice { Perks = perks, EndTime = Mission.CurrentTime + ChoiceWindowSec };
+
+            // MVP: выбор через сообщения (Gauntlet-подключение - следующий шаг, см. docs/AUDIT.md).
+            InformationManager.DisplayMessage(new InformationMessage(
+                $"PERK CHOICE ({(int)ChoiceWindowSec}s): 1) {perks[0].Name}  2) {perks[1].Name}  3) {perks[2].Name}", Colors.Gold));
+        }
+
+        /// <summary>Вызов от Gauntlet-кнопок (ExecuteChoose1/2/3 в NI_PerkChoice_VM).</summary>
+        public void ChooseForAgent(Agent agent, int index)
+        {
+            if (!_pending.TryGetValue(agent, out var choice)) return;
+            if (index < 0 || index >= choice.Perks.Count) return;
+            ApplyPerk(agent, choice.Perks[index].Id);
+            _pending.Remove(agent);
         }
 
         public void ApplyPerk(Agent agent, int perkId)
@@ -155,18 +208,34 @@ namespace NordInvasion.Managers
 
             var def = Models.PerkDatabase.GetById(perkId);
             if (def != null)
+            {
                 InformationManager.DisplayMessage(new InformationMessage($"Perk applied: {def.Name} - {def.Desc}", Colors.Green));
+                Audio.NISound.PlayPerkApplied();
+            }
         }
     }
 
     // Loot Manager Mechanic 8
     public class LootManager : MissionBehavior
     {
+        /// <summary>Спавнит физ-мешок с золотом босса. F - подобрать, донести до казны.</summary>
         public void SpawnLootBag(Vec3 position, int goldValue)
         {
             InformationManager.DisplayMessage(new InformationMessage($"Boss loot! {goldValue} gold bag - carry to treasury! F to pick", Colors.Gold));
-            // Spawn prop ni_loot_bag_gold at position
-            // Mission.Current.Scene.CreateGameEntity...
+
+            var entity = Machines.PropSpawner.SpawnWithFallback(
+                Mission.Current.Scene, "ni_loot_bag_gold", Machines.PropSpawner.FallbackChest, position);
+            if (entity == null)
+            {
+                // Fallback: без пропса золото просто падает в казну
+                InformationManager.DisplayMessage(new InformationMessage($"(loot bag asset missing - +{goldValue} gold auto-deposited)", Colors.Yellow));
+                var main = Mission.Current?.MainAgent;
+                main?.GetComponent<PlayerGoldComponent>()?.AddGold(goldValue);
+                return;
+            }
+
+            var bag = new Machines.LootBagUsable { GoldValue = goldValue };
+            entity.AddComponent(bag);
         }
     }
 

@@ -1,19 +1,22 @@
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
+using NordInvasion.Utils;
+using TaleWorlds.Core;
 
 namespace NordInvasion.Machines
 {
     // Mechanic 2 + 14: Barricades destructible + burning
     public class BarricadeDestructible : DestructibleComponent
     {
+        public int StartHitPoints = 800; // настраивается для foundation/wall/door
         private bool _isBurning = false;
         private float _burnEndTime = 0f;
 
         protected override void OnInit()
         {
             base.OnInit();
-            HitPoints = 800;
-            MaxHitPoints = 800;
+            HitPoints = StartHitPoints;
+            MaxHitPoints = StartHitPoints;
         }
 
         public override void OnHit(Agent attackerAgent, int damage, Vec3 impactPosition, Vec3 impactDirection)
@@ -27,7 +30,7 @@ namespace NordInvasion.Machines
                 {
                     _isBurning = true;
                     _burnEndTime = Mission.CurrentTime + 10f;
-                    Mission.Current.Scene.AddParticleSystem("psys_torch_fire", GameEntity.GlobalPosition);
+                    Mission.Current.Scene.AddParticleSystem(NIEffects.TorchFire, GameEntity.GlobalPosition);
                     InformationManager.DisplayMessage(new InformationMessage("Barricade ignited! Burning 10 sec", Colors.Red));
                 }
             }
@@ -35,8 +38,16 @@ namespace NordInvasion.Machines
             // Scavenging on destroy
             if (HitPoints <= 0)
             {
-                // Spawn 2 wood
-                InformationManager.DisplayMessage(new InformationMessage("Barricade destroyed! 2 wood scavengeable", Colors.Yellow));
+                // Даем 2 дерева ближайшему игроку, разрушавшему
+                if (attackerAgent != null)
+                {
+                    var comp = attackerAgent.GetComponent<Managers.PersistenceManager.PlayerGoldComponent>();
+                    if (comp != null)
+                    {
+                        comp.AddWood(2);
+                        InformationManager.DisplayMessage(new InformationMessage("Barricade destroyed! +2 wood", Colors.Yellow));
+                    }
+                }
             }
         }
 
@@ -87,19 +98,25 @@ namespace NordInvasion.Machines
 
     public class TreasuryChestUsable : UsableMachine
     {
-        // Mechanic 8: Treasury
+        // Mechanic 8: Treasury - сдать мешок босса
         public override void OnUse(Agent userAgent, int index = -1)
         {
             base.OnUse(userAgent, index);
             var goldComp = userAgent.GetComponent<Managers.PersistenceManager.PlayerGoldComponent>();
             if (goldComp == null) return;
 
-            // Check if carrying loot
-            // if (goldComp.IsCarryingLoot)
+            if (goldComp.IsCarryingLoot)
             {
-                goldComp.AddGold(500);
-                InformationManager.DisplayMessage(new InformationMessage("Gold delivered to treasury! +500", Colors.Gold));
+                int value = goldComp.CarriedLootValue > 0 ? goldComp.CarriedLootValue : 500;
+                goldComp.AddGold(value);
+                goldComp.IsCarryingLoot = false;
+                goldComp.CarriedLootValue = 0;
                 userAgent.SetMaximumSpeedFactor(1f);
+                InformationManager.DisplayMessage(new InformationMessage($"Gold delivered to treasury! +{value}", Colors.Gold));
+            }
+            else
+            {
+                InformationManager.DisplayMessage(new InformationMessage("Treasury: no loot to deliver. Kill a boss first!", Colors.Yellow));
             }
         }
     }
@@ -114,11 +131,20 @@ namespace NordInvasion.Machines
             var goldComp = userAgent.GetComponent<Managers.PersistenceManager.PlayerGoldComponent>();
             if (goldComp == null) return;
 
+            if (goldComp.IsCarryingLoot)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("You are already carrying a loot bag! Deliver it to the treasury first.", Colors.Red));
+                return;
+            }
+
             // Pick up bag
-            // goldComp.IsCarryingLoot = true
+            goldComp.IsCarryingLoot = true;
+            goldComp.CarriedLootValue = GoldValue;
             userAgent.SetMaximumSpeedFactor(0.7f);
             InformationManager.DisplayMessage(new InformationMessage($"Picked up {GoldValue} gold bag! Carry to treasury! Speed -30%", Colors.Gold));
-            this.GameEntity.SetVisibilityExcludeParents(false);
+            // Мешок исчезает из сцены
+            if (GameEntity != null)
+                GameEntity.SetActive(false);
         }
     }
 
@@ -153,7 +179,7 @@ namespace NordInvasion.Machines
         protected override void OnInit()
         {
             base.OnInit();
-            Mission.Current.Scene.AddParticleSystem("psys_torch_fire", GameEntity.GlobalPosition);
+            Mission.Current.Scene.AddParticleSystem(NIEffects.TorchFire, GameEntity.GlobalPosition);
         }
     }
 }

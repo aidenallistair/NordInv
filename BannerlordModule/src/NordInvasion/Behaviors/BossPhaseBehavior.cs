@@ -1,5 +1,6 @@
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.Library;
+using TaleWorlds.Core;
 
 namespace NordInvasion.Behaviors
 {
@@ -19,6 +20,7 @@ namespace NordInvasion.Behaviors
         {
             _bosses.Add(new BossState { BossAgent = boss, Phase = 1, MaxHP = boss.HealthLimit });
             InformationManager.DisplayMessage(new InformationMessage($"BOSS SPAWNED: {boss.Name} - Phase 1", Colors.Red));
+            Audio.NISound.PlayBossSpawn();
         }
 
         public override void OnMissionTick(float dt)
@@ -44,6 +46,7 @@ namespace NordInvasion.Behaviors
             switch (newPhase)
             {
                 case 2:
+                    Audio.NISound.PlayBossPhase2();
                     InformationManager.DisplayMessage(new InformationMessage($"BOSS {agent.Name} Phase 2! Enraged! Minions summoned!", Colors.Red));
                     // Summon 2 minions
                     var minionTroop = Game.Current.ObjectManager.GetObject<TaleWorlds.Core.CharacterObject>("ni_nord_berserker");
@@ -60,9 +63,10 @@ namespace NordInvasion.Behaviors
                     break;
 
                 case 3:
+                    Audio.NISound.PlayBossPhase3();
                     InformationManager.DisplayMessage(new InformationMessage($"BOSS {agent.Name} Phase 3! BERSERK! Fire around! Kite him!", Colors.Red));
                     // Ignite ground
-                    Mission.Current.Scene.AddParticleSystem("psys_oil_fire", agent.Position);
+                    Mission.Current.Scene.AddParticleSystem(Utils.NIEffects.OilFire, agent.Position);
                     // Berserk speed
                     agent.SetMaximumSpeedFactor(1.8f);
                     break;
