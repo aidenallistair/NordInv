@@ -1,0 +1,18 @@
+<Prefabs>
+  <Prefab Name="NI_BuildMenu" DataSource="NI_BuildMenu_VM">
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="600" SuggestedHeight="700" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
+      <Children>
+        <TextWidget Text="Fortress Builder" HorizontalAlignment="Center" MarginTop="20" Brush="Singleplayer.Text"/>
+        <TextWidget DataSource="{Resources}" HorizontalAlignment="Center" MarginTop="50" Brush="Singleplayer.Text"/>
+        <ButtonWidget DataSource="{BuildFoundationCommand}" Text="Foundation (5 wood)" MarginTop="100" SuggestedWidth="400" HorizontalAlignment="Center"/>
+        <ButtonWidget DataSource="{BuildWallCommand}" Text="Wall (3 wood) - needs foundation" MarginTop="150" SuggestedWidth="400" HorizontalAlignment="Center"/>
+        <ButtonWidget DataSource="{BuildDoorCommand}" Text="Door (5 wood + 2 metal)" MarginTop="200" SuggestedWidth="400" HorizontalAlignment="Center"/>
+        <ButtonWidget DataSource="{BuildStakesCommand}" Text="Stakes vs Cavalry (4 wood)" MarginTop="250" SuggestedWidth="400" HorizontalAlignment="Center"/>
+        <ButtonWidget DataSource="{BuildOilCommand}" Text="Oil Cauldron (10 wood + 5 metal)" MarginTop="300" SuggestedWidth="400" HorizontalAlignment="Center"/>
+        <ButtonWidget DataSource="{BuildBrazierCommand}" Text="Brazier - Light (2 wood)" MarginTop="350" SuggestedWidth="400" HorizontalAlignment="Center"/>
+        <ButtonWidget DataSource="{BuildShieldWallCommand}" Text="Shield Wall (6 wood)" MarginTop="400" SuggestedWidth="400" HorizontalAlignment="Center"/>
+        <TextWidget Text="Engineer repairs 2x faster, can build Tier2" HorizontalAlignment="Center" MarginTop="500" Brush="Singleplayer.Text"/>
+      </Children>
+    </Widget>
+  </Prefab>
+</Prefabs>

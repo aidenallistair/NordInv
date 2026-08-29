@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Items>
+  <!-- Role items Mechanic 3 -->
+  <Item id="torch" name="Torch" mesh="torch" culture="Culture.empire" Type="OneHandedWeapon" weight="1" Tier="0">
+    <ItemComponent><Weapon WeaponClass="OneHandedAxe" ThrustDamage="5" SwingDamage="8" SwingSpeed="90" WeaponLength="80"/></ItemComponent>
+    <Flags>PrimaryWeapon</Flags>
+  </Item>
+  <Item id="repair_hammer" name="Repair Hammer" mesh="hammer" Type="OneHandedWeapon" weight="2" Tier="0">
+    <ItemComponent><Weapon WeaponClass="Mace" SwingDamage="10" WeaponLength="70"/></ItemComponent>
+  </Item>
+  <Item id="medical_kit" name="Medical Kit" mesh="medical_kit" Type="Goods" weight="2" Tier="0"/>
+  <Item id="banner_swadia" name="Swadian Banner" mesh="banner_a" Type="Banner" weight="3" Tier="0"/>
+
+  <!-- Resources Mechanic 9 -->
+  <Item id="wood_plank" name="Wood Plank" mesh="plank" Type="Goods" weight="3" Tier="0"/>
+  <Item id="scrap_metal" name="Scrap Metal" mesh="iron" Type="Goods" weight="2" Tier="0"/>
+  <Item id="cloth_scrap" name="Cloth Scrap" mesh="wool_cloth" Type="Goods" weight="1" Tier="0"/>
+
+  <!-- Loot Mechanic 8 -->
+  <Item id="loot_bag_gold" name="Bag of Gold" mesh="sack" Type="Goods" weight="10" Tier="0"/>
+  <Item id="blueprint_rare" name="Rare Blueprint" mesh="book_a" Type="Goods" weight="1" Tier="4" value="1000"/>
+
+  <!-- Powder barrel Mechanic 14 -->
+  <Item id="powder_barrel" name="Powder Barrel" mesh="barrel" Type="Goods" weight="15" Tier="0"/>
+
+  <!-- Oil pot Mechanic 2 -->
+  <Item id="oil_pot" name="Oil Pot" mesh="oil_pot" Type="Thrown" weight="3" Tier="0">
+    <ItemComponent><Weapon WeaponClass="ThrowingAxe" ThrustDamage="20" WeaponLength="20" StackAmount="3"/></ItemComponent>
+  </Item>
+
+  <!-- Cosmetics Mechanic 26 -->
+  <Item id="pauldron_wall" name="Pauldron of The Wall" mesh="pauldron_wall" Type="ShoulderArmor" weight="2" Tier="5"/>
+  <Item id="cloak_medic_white" name="White Medic Cloak" mesh="cloak_white" Type="Cape" weight="1" Tier="5"/>
+  <Item id="sword_blood_jarl" name="Blood Jarl Sword" mesh="sword_blood" Type="OneHandedWeapon" weight="2" Tier="5">
+    <ItemComponent><Weapon WeaponClass="OneHandedSword" SwingDamage="40" ThrustDamage="20" WeaponLength="100"/></ItemComponent>
+  </Item>
+  <Item id="helmet_engineer" name="Engineer Helmet" mesh="helmet_engineer" Type="HeadArmor" weight="2" Tier="5"/>
+</Items>

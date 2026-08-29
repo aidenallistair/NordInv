@@ -1,0 +1,15 @@
+<Prefabs>
+  <Prefab Name="NI_HUD" DataSource="NI_HUD_VM">
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="800" SuggestedHeight="150" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="10">
+      <Children>
+        <TextWidget DataSource="{WaveInfo}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Brush="Singleplayer.Text">
+          <Children>
+            <TextWidget DataSource="{MutatorInfo}" MarginTop="25" Brush="Singleplayer.Text" />
+            <TextWidget DataSource="{GoldInfo}" MarginTop="50" Brush="Singleplayer.Text" />
+            <TextWidget DataSource="{ObjectiveInfo}" MarginTop="75" Brush="Singleplayer.Text" />
+          </Children>
+        </TextWidget>
+      </Children>
+    </Widget>
+  </Prefab>
+</Prefabs>

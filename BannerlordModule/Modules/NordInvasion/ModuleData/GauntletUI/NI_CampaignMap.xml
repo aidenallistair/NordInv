@@ -1,0 +1,21 @@
+<Prefabs>
+  <Prefab Name="NI_CampaignMap" DataSource="NI_CampaignMap_VM">
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1000" SuggestedHeight="700" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Singleplayer.Window">
+      <Children>
+        <TextWidget Text="Swadia Campaign - Choose Village to Defend" HorizontalAlignment="Center" MarginTop="20" Brush="Singleplayer.Text"/>
+        <Widget SuggestedWidth="900" SuggestedHeight="600" MarginTop="80" LayoutImp="Vertical">
+          <Children>
+            <ButtonWidget DataSource="{Village1Command}" Text="Village of Jelbegi (Easy) - Plain" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
+            <ButtonWidget DataSource="{Village2Command}" Text="Forest Hamlet (Medium) - Forest" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
+            <ButtonWidget DataSource="{Village3Command}" Text="Castle Outpost (Hard) - Castle" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
+            <ButtonWidget DataSource="{Village4Command}" Text="Bridge Fort (Chokepoint) - Best for barricades" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
+            <ButtonWidget DataSource="{Village5Command}" Text="Snow Village (Hard) - Snow, Nords own" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
+            <ButtonWidget DataSource="{Village6Command}" Text="Desert Oasis (Medium)" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
+            <ButtonWidget DataSource="{Village7Command}" Text="Mountain Keep (Very Hard) - Nords own" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
+            <ButtonWidget DataSource="{Village8Command}" Text="Coastal Town (Medium)" MarginTop="10" SuggestedWidth="500" HorizontalAlignment="Center"/>
+          </Children>
+        </Widget>
+      </Children>
+    </Widget>
+  </Prefab>
+</Prefabs>

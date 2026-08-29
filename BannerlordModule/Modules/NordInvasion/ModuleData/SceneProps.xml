@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SceneProps>
+  <!-- Core shop -->
+  <SceneProp id="ni_armory_chest" name="Armory Chest" mesh="armory_chest" body="bo_armory_chest" />
+  
+  <!-- Mechanic 2: Fortress -->
+  <SceneProp id="ni_foundation_wood" name="Wood Foundation" mesh="foundation_wood" body="bo_foundation_wood" destructible="true" hit_points="500"/>
+  <SceneProp id="ni_wall_wood" name="Wood Wall" mesh="wall_wood" body="bo_wall_wood" destructible="true" hit_points="800" />
+  <SceneProp id="ni_wall_door" name="Wood Door" mesh="wall_door" body="bo_wall_door" destructible="true" hit_points="1000" />
+  <SceneProp id="ni_wall_window" name="Wall Window" mesh="wall_window" body="bo_wall_window" destructible="true" hit_points="600"/>
+  <SceneProp id="ni_stakes" name="Stakes vs Cavalry" mesh="stakes" body="bo_stakes" destructible="true" hit_points="400"/>
+  <SceneProp id="ni_oil_cauldron" name="Oil Cauldron" mesh="oil_cauldron" body="bo_oil_cauldron" />
+  <SceneProp id="ni_brazier" name="Brazier" mesh="brazier" body="bo_brazier" />
+  <SceneProp id="ni_spike_trap" name="Spike Trap" mesh="spike_trap" body="bo_spike_trap" destructible="true" hit_points="200"/>
+  <SceneProp id="ni_shield_wall" name="Shield Wall" mesh="shield_wall" body="bo_shield_wall" destructible="true" hit_points="1200"/>
+
+  <!-- Mechanic 8: Loot -->
+  <SceneProp id="ni_loot_bag_gold" name="Gold Bag" mesh="sack" body="bo_sack" />
+  <SceneProp id="ni_treasury_chest" name="Treasury Chest" mesh="treasury_chest" body="bo_treasury_chest" />
+
+  <!-- Mechanic 4: Objectives -->
+  <SceneProp id="ni_ram" name="Battering Ram" mesh="battering_ram" body="bo_battering_ram" destructible="true" hit_points="2000"/>
+  <SceneProp id="ni_camp_nord" name="Nord Camp" mesh="camp_nord" body="bo_camp_nord" destructible="true" hit_points="300"/>
+
+  <!-- Mechanic 14: Fire & Destructible -->
+  <SceneProp id="ni_tree_oak" name="Oak Tree" mesh="tree_oak" body="bo_tree_oak" destructible="true" hit_points="400"/>
+  <SceneProp id="ni_fallen_tree" name="Fallen Tree" mesh="fallen_tree" body="bo_fallen_tree" />
+  <SceneProp id="ni_powder_barrel" name="Powder Barrel" mesh="barrel" body="bo_barrel" destructible="true" hit_points="100"/>
+
+  <!-- Mechanic 6: Campfire -->
+  <SceneProp id="ni_campfire" name="Campfire" mesh="campfire" body="bo_campfire" />
+  <SceneProp id="ni_campfire_forge" name="Forge Campfire" mesh="campfire_forge" body="bo_campfire" />
+
+  <!-- Mechanic 18: Siege weapons -->
+  <SceneProp id="ni_ballista" name="Ballista" mesh="ballista" body="bo_ballista" usable="true" />
+  <SceneProp id="ni_catapult" name="Catapult" mesh="catapult" body="bo_catapult" usable="true" />
+
+  <!-- Mechanic 23: Traps -->
+  <SceneProp id="ni_rock_trap" name="Rock Trap" mesh="rock_trap" body="bo_rock_trap" usable="true" />
+  <SceneProp id="ni_log_trap" name="Log Trap" mesh="log_trap" body="bo_log_trap" usable="true" />
+  <SceneProp id="ni_oil_ditch" name="Oil Ditch" mesh="oil_ditch" body="bo_oil_ditch" usable="true" />
+  <SceneProp id="ni_drawbridge" name="Drawbridge" mesh="drawbridge" body="bo_drawbridge" usable="true" />
+
+  <!-- Supply Mechanic 30 -->
+  <SceneProp id="ni_warehouse" name="Warehouse" mesh="warehouse" body="bo_warehouse" />
+  <SceneProp id="ni_supply_cart" name="Supply Cart" mesh="supply_cart" body="bo_supply_cart" destructible="true" hit_points="500"/>
+  <SceneProp id="ni_ammo_box" name="Ammo Box" mesh="ammo_box" body="bo_ammo_box" />
+</SceneProps>
