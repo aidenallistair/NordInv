@@ -1,62 +1,62 @@
-# NordInv - Nord Invasion Better Edition
+# Nord Invasion Better Edition - Bannerlord
 
-Реализация мультиплеерного режима Nord Invasion в стиле Fianna.ru, но лучше.
+Кооперативный PvE мод для Mount & Blade II: Bannerlord. Оборона Свадии от волн нордов с прокачкой, строительством и мета-прогрессией.
 
-## Ветки
+## Что это
 
-- **Warband Edition** (оригинал Fianna): `ModuleSystem/` + `ServerConfig/` + `docs/FIANNA_GUIDE_RU.md`
-  - Python Module System 1.174 + WSE
-  - Готовый скелет мода с волнами, магазином, баррикадами
-  - Инструкция по поднятию dedicated сервера
+Команда 4-32 игроков держит форт против волн:
 
-- **Better Edition (15 улучшений)**: `ModuleSystem/` (обновлен) + `docs/BETTER_EDITION.md` + `docs/IMPLEMENTATION_PLAN.md`
-  - 15 механик: перки, форт-конструктор, роли, цели волн, AI-директор, погода, кавалерия, физ-лут, скавенджинг, мутаторы, отряды с формациями, персистенция 2.0, ранения, разрушаемость, глобальная кампания
-  - Backend FastAPI в `src/backend/`
+- Волны усиливаются, каждые 3 волны - спец-цель (таран, эскорт, поджог лагерей)
+- Роли: Медик поднимает, Инженер строит/чинит, Знаменосец бафает, Пехота/Лучник дамажат
+- Модульный форт: фундамент -> стены -> ворота -> колья против кавалерии -> масляный котел
+- Roguelite перки каждые 3 волны, мутаторы богов каждые 4, AI-Директор как в L4D
+- Погода влияет: туман слепит лучников, дождь тушит огненные стрелы, ночь требует факелов
+- Физ-лут с боссов надо донести до казны, скавенджинг ресурсов с трупов и обломков
+- Персистенция по SteamID: золото, чертежи, сезоны, BattlePass, глобальная кампания 8 деревень
 
-- **Bannerlord Edition (NEW)**: `BannerlordModule/` + `docs/BANNERLORD_PLAN_RU.md`
-  - Порт на Bannerlord C# + Harmony
-  - Архитектура: MissionBehaviors, AgentComponents, DestructibleComponents, Gauntlet UI
-  - Поддержка Co-op и Dedicated MP
-  - Тот же backend
+## Структура проекта
 
-## Быстрый старт
+```
+BannerlordModule/ - C# мод
+  Modules/NordInvasion/SubModule.xml - описание модуля
+  src/NordInvasion/
+    SubModule.cs - точка входа
+    Behaviors/ - логика волн, директора, погоды, целей, мутаторов
+    Components/ - медик, ранения/стамина, перки, лут
+    Machines/ - баррикады, колья, котел, казна, таран
+    Managers/ - стройка, отряды с формациями, скавенджинг, персистенция
+    UI/ - HUD, магазин, выбор перков, стройка, карта кампании
+    Models/ - WaveDefinition, Mutator, Perk, Village
 
-### Warband Fianna (как было)
+DedicatedServer/Bannerlord/ - конфиг и скрипты для выделенного сервера
+src/backend/ - FastAPI бекенд для персистенции, кампании, сезонов
 
-Смотри `docs/QUICKSTART.md` и `docs/FIANNA_GUIDE_RU.md`
+docs/BANNERLORD_PLAN_RU.md - полный план реализации 15 механик
+```
 
-### Better Edition Warband
+## Быстрый старт для разработки
 
-Смотри `docs/BETTER_EDITION.md` и `docs/IMPLEMENTATION_PLAN.md` - там план реализации всех 15 механик.
+1. Установи Bannerlord + Modding Kit (Steam -> Tools)
+2. Установи зависимости с Nexus: ButterLib, UIExtenderEx, ModConfigurationMenu v5
+3. Склонируй репо в `.../Mount & Blade II Bannerlord/Modules/NordInvasion/`
+4. Открой `BannerlordModule/NordInvasion.csproj` в Rider/VS, пропиши пути к TaleWorlds.*.dll
+5. Скомпилируй -> `Modules/NordInvasion/bin/Win64_Shipping_Client/NordInvasion.dll`
+6. В лаунчере включи NordInvasion
+7. Custom Battle -> Scene `mp_ni_bridge_01` -> Mission `mp_nord_invasion` или через Co-op мод
 
-### Bannerlord Better Edition (рекомендуемый путь)
+## Dedicated Server
 
-Смотри `docs/BANNERLORD_PLAN_RU.md` - полный план под Bannerlord с кодом.
+```bash
+# Скачать сервер через SteamCMD
+steamcmd +login anonymous +app_update 1058080 validate +quit
 
-Скелет C# проекта уже в `BannerlordModule/`:
-- `SubModule.cs` - точка входа
-- `Behaviors/NordInvasionWaveManagerBehavior.cs` - ядро волн с директором, мутаторами, погодой
-- `Managers/` - стройка, отряды, лут, персистенция
-- `Components/` - медик, ранения, перки
+# Запуск
+TaleWorlds.MountAndBlade.DedicatedCustomServer.exe /dedicatedcustomserverconfig DedicatedServer/Bannerlord/DedicatedCustomServerConfig.xml
+```
 
-Скомпилируй в `Modules/NordInvasion/bin/`.
+Подробнее в `DedicatedServer/Bannerlord/README.md`
 
-## Dedicated Server Files
-
-Я не смог скачать `mb_warband_dedicated_1174.zip` и Bannerlord Dedicated Server в этом окружении - TaleWorlds CDN блокирует запросы из sandbox (SSL_ERROR_SYSCALL).
-
-**Что делать:**
-1. Скачай вручную:
-   - Warband: https://www.taleworlds.com/en/Games/Warband/Download (Other Downloads -> Dedicated Server) или прямая ссылка `https://download.taleworlds.com/mb_warband_dedicated_1174.zip` (91 MB)
-   - Bannerlord: SteamCMD `app_update 1058080` или Steam Tools -> Mount & Blade II Dedicated Server
-2. Закинь в папки:
-   - `DedicatedServer/Warband/` - для Warband
-   - `DedicatedServer/Bannerlord/` - для Bannerlord
-3. Инструкции в `DedicatedServer/Bannerlord/README.md` и `ServerConfig/`
-
-Если загрузишь файлы, я добавлю их в репо (используй Git LFS для больших бинарников).
-
-## Backend
+## Backend (персистенция, кампания, сезоны)
 
 ```bash
 cd src/backend
@@ -64,16 +64,36 @@ pip install -r requirements.txt
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Поддерживает: игроков, золото, чертежи, деревни (кампания), сезоны, battlepass, лидерборд.
+API:
+- `POST /api/player/login` - логин по SteamID
+- `POST /api/kill` - убийство, золото, ресурсы
+- `GET /api/campaign/villages` - деревни кампании
+- `POST /api/campaign/battle` - результат битвы за деревню
+- `GET /api/leaderboard` - топ игроков
 
-## Документация
+## 15 механик Better Edition
 
-- `docs/FIANNA_GUIDE_RU.md` - как поднять Fianna сервер
-- `docs/QUICKSTART.md` - за 15 минут
-- `docs/WSE_INTEGRATION.md` - WSE + HTTP
-- `docs/MAPS_GUIDE.md` - карты
-- `docs/IMPLEMENTATION_PLAN.md` - план 15 механик для Warband
-- `docs/BETTER_EDITION.md` - что реализовано в Better
-- `docs/BANNERLORD_PLAN_RU.md` - план под Bannerlord (главный)
+1. **Roguelite перки** - выбор 1 из 3 каждые 3 волны
+2. **Модульный форт** - стройка из фундамента в стены, ворота, колья, котел
+3. **Роли** - Медик, Инженер, Знаменосец, Пехота, Лучник
+4. **Цели волн** - таран, эскорт, поджог лагерей, защита казны
+5. **AI-Директор** - адаптирует сложность под команду как в L4D2
+6. **Погода/время** - туман, дождь, снег, ночь влияют на бой
+7. **Кавалерия нордов** - фланговые рейды, контрмеры кольями
+8. **Физ-лут** - мешок с босса надо донести до казны
+9. **Скавенджинг** - ресурсы с трупов и обломков, крафт у костра
+10. **Мутаторы богов** - 12 проклятий от Тора, Локи, Одина и т.д.
+11. **Отряды с формациями** - стена щитов, клин берсерков, лучники под прикрытием
+12. **Персистенция 2.0** - SteamID, чертежи, скины, сезоны, BattlePass
+13. **Ранения/усталость** - 3 падения до смерти, стамина влияет на урон
+14. **Разрушаемость/огонь** - деревья падают, бочки взрываются, поджоги
+15. **Глобальная кампания** - 8 деревень, голосование, захват карты
 
-Удачной обороны Свадии!
+Детали в `docs/BANNERLORD_PLAN_RU.md`
+
+## Следующие шаги
+
+- Создать сцены `mp_ni_*` в Bannerlord Scene Editor
+- Создать CharacterObject XML для нордов
+- Дописать Gauntlet UI
+- Тест с 4 игроками через Bannerlord Co-op
