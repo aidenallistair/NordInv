@@ -1,0 +1,24 @@
+Entry points placement for Nord Invasion
+
+For map mp_ni_bridge_01:
+
+Defenders (players) - inside fort:
+0: (0, 0, 0) - center of fort
+1-31: around 0, radius 5-10m, inside walls
+
+Attackers (nords):
+32-39: North road - 100m north of fort, spread 20m
+40-47: East forest - 80m east, in trees
+48-55: South road - 120m south, main attack
+56-63: West river - 60m west, flank
+
+64: Boss - 150m south, on hill, visible
+
+AI mesh must connect attacker entries to defender fort.
+Place ai barriers to funnel bots into chokepoints.
+
+Scene props:
+- 2x spr_ni_armory_chest at (2, 2, 0) and (-2, 2, 0) inside fort
+- Optional: pre-placed barricades at gate
+
+Check with: In edit mode, press Ctrl+E to see entry points

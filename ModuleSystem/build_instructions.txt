@@ -1,0 +1,33 @@
+Как собрать модуль:
+
+1. Скачай чистый Module System 1.174:
+   https://forums.taleworlds.com/index.php?threads/module-system-1-174.400830/
+   Распакуй в C:\ModuleSystem_1174
+
+2. Скопируй файлы из этого репо:
+   ModuleSystem/module_constants.py -> C:\ModuleSystem_1174\module_constants.py (добавь в конец)
+   ModuleSystem/module_troops.py -> добавь в module_troops.py
+   ModuleSystem/module_scripts.py -> добавь в module_scripts.py
+   ModuleSystem/module_mission_templates.py -> замени или добавь шаблон mp_nord_invasion
+   ModuleSystem/module_presentations.py -> добавь презентации
+   ModuleSystem/module_scene_props.py -> добавь пропсы
+
+   Либо скопируй целиком как отдельные файлы и импортируй.
+
+3. В module_info.py:
+   export_dir = "C:/Program Files (x86)/Steam/steamapps/common/MountBlade Warband/Modules/Fianna_NordInvasion/"
+
+4. Запусти build_module.bat
+
+5. Если ошибок нет, в Modules/Fianna_NordInvasion появятся txt файлы
+
+6. Скопируй этот модуль на сервер в Modules/
+
+7. Для клиента - тоже самое, игроки должны иметь точно такой же модуль
+
+ВАЖНО: Warband 1.168 (Fianna) и 1.174 несовместимы! Если хочешь как на Fianna.ru точно - используй Module System 1.168.
+Скачать MS 1.168: https://www.taleworlds.com/en/Games/Warband/Download -> Module System
+
+Но рекомендуется 1.174 - больше фич и WSE поддержка лучше.
+
+Для компиляции нужен Python 2.7 (оригинальный MS). Для Python 3 используй форк: https://github.com/mountblade-codex/Module-System-Extended
