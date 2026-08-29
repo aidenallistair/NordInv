@@ -126,7 +126,7 @@ namespace NordInvasion.Audio
             }
             catch (Exception ex)
             {
-                Warn($"'{eventId}': {ex.InnerException != null ? ex.InnerException.Message : ex.Message}");
+                Warn($"'{eventId}': {(ex.InnerException != null ? ex.InnerException.Message : ex.Message)}");
             }
         }
 
@@ -145,7 +145,7 @@ namespace NordInvasion.Audio
             }
             catch (Exception ex)
             {
-                Warn($"'{eventId}': {ex.InnerException != null ? ex.InnerException.Message : ex.Message}");
+                Warn($"'{eventId}': {(ex.InnerException != null ? ex.InnerException.Message : ex.Message)}");
             }
         }
 
