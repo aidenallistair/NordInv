@@ -230,7 +230,7 @@ VM'ы сегодня не выведены, а `ModuleData/GauntletUI/NI_*.xml` 
 
 | Механика | Состояние в игре | Как проверить всё равно |
 |---|---|---|
-| 2 / 18 / 23 - стройка форта | `FortressBuildManager.TryPlace` вызывается **только** из `NI_BuildMenu_VM`, т.е. игрок построить ничего не может | временное debug-поведение (снизу) или `python3 tools/test_backend_sql.py`-проверка гейта чертежей + чтение `LockedInfo` |
+| 2 / 18 / 23 - стройка форта | `FortressBuildManager.TryPlace` вызывается **только** из `NI_BuildMenu_VM`, т.е. игрок построить ничего не может | временное debug-поведение (снизу); сам гейт чертежей статически сверяет `tools/lint_csharp.py` (blueprint → `Place`), а выдача чертежа - `tools/test_backend_api.py` (409 на повторной покупке) |
 | 12 - магазин целиком | доступен лишь частично: 3 сервисные покупки через F на ящике (`NI_ArmoryUsable`) | `curl` + `shop_purchases`, как в 5.2-5.4 |
 | 15 - голосование кампании | экран не открыт, но `PersistenceManager.VoteForVillage` и `NI_CampaignMap_VM` работают | `POST /api/campaign/vote`, `GET /api/campaign/villages` |
 | 27 - ставки зрителя | `NI_Spectator_VM` без экрана | только код/API |
