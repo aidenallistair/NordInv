@@ -9,9 +9,11 @@
 ## Быстрый старт (ModKit)
 
 ### 1. Требования
-- **Bannerlord 1.2.10+** + **Modding Kit** (Steam → Library → Tools → `Mount & Blade II: Bannerlord - Modding Kit`)
+- **Bannerlord 1.4.8** (build 1193) + **Modding Kit** (Steam → Library → Tools → `Mount & Blade II: Bannerlord - Modding Kit`)
 - .NET SDK 8.0+ (`dotnet --version`) или Visual Studio 2022 / Rider
-- Зависимости Nexus (включить в лаунчере перед NI): ButterLib 2.8.11+, UIExtenderEx 2.8.0+, MCMv5 5.9.0+
+- **Без War Sails / морского DLC**: модуль не использует War Sails и не требует его.
+- **Без внешних модов**: ButterLib/UIExtenderEx/MCM в коде не используются — жёстких
+  зависимостей Nexus нет, модуль работает на чистой 1.4.8.
 
 ### 2. Копирование модуля
 ```bat

@@ -4,10 +4,8 @@
 
 ## Стек
 
-- **Bannerlord 1.2.10+**
+- **Bannerlord 1.4.8** (без War Sails DLC)
 - **.NET Framework 4.7.2** / .NET 6 для новых версий
-- **Harmony 2.2.2**
-- **ButterLib + UIExtenderEx + Mod Configuration Menu v5** - база
 - **Backend:** FastAPI из `src/backend/main.py`
 
 Два режима:

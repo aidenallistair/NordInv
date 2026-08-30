@@ -60,7 +60,7 @@ namespace NordInvasion.Machines
                 foreach (var agent in Mission.Current.GetNearbyAgents(GameEntity.GlobalPosition.AsVec2, 3f))
                 {
                     if (agent.Team.Side == BattleSideEnum.Attacker)
-                        agent.SetHitPoints(agent.Health - (int)(dt * 10f));
+                        agent.Health = agent.Health - (int)(dt * 10f);
                 }
             }
             else if (_isBurning && Mission.CurrentTime > _burnEndTime)
@@ -87,8 +87,8 @@ namespace NordInvasion.Machines
                 var mount = attackerAgent.MountAgent;
                 if (mount != null)
                 {
-                    mount.SetHitPoints(0);
-                    attackerAgent.SetHitPoints(0);
+                    mount.Health = 0;
+                    attackerAgent.Health = 0;
                     InformationManager.DisplayMessage(new InformationMessage("Horse impaled on stakes!", Colors.Green));
                 }
             }
@@ -169,7 +169,7 @@ namespace NordInvasion.Machines
             }
 
             // Heal
-            userAgent.SetHitPoints(System.Math.Min(userAgent.Health + 20, userAgent.HealthLimit));
+            userAgent.Health = System.Math.Min(userAgent.Health + 20, userAgent.HealthLimit);
         }
     }
 

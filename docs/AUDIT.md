@@ -144,9 +144,11 @@ M&B II: Bannerlord, кооп-PvE "hold the fort": 25 волн нордов, 29 �
    объявляют этот override; в справочнике 1.0.3 виртуала с такой сигнатурой нет. Если его
    нет и в 1.2.10 → CS0115 при сборке либо молча мёртвый код. Единственное предупреждение
    `lint_csharp.py`; при первой сборке сверить по DLL и при необходимости переписать на `OnTick`.
-2. Публичные API вне списка справочника: `Agent.SetHitPoints/SetMaximumHitPoints`,
+2. Публичные API вне списка справочника: ~~`Agent.SetHitPoints/SetMaximumHitPoints`~~
+   **исправлено (session 6)** → `Agent.Health`/`HealthLimit`; осталось верифицировать
    `Agent.SpawnMissile`, `Mission.AddExplosion`, `Scene.LoadSceneProp`,
-   `Formation.Captain`.
+   `Formation.Captain`, `destructible.SetHitPoints`, `Scene.SetFog` — трекер в
+   `docs/COMPILE_RISKS.md`, точки подсвечены линтером.
 3. **Экранов мода в игре нет**: UIExtender в проекте отсутствует (`grep -rn UIExtender
    src/` пусто), поэтому `NI_Shop_VM` / `NI_BuildMenu_VM` / `NI_PerkChoice_VM` /
    `NI_CampaignMap_VM` ни к одному Movie не привязаны. Практическое следствие:

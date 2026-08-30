@@ -33,7 +33,7 @@ namespace NordInvasion.Machines
             var entity = scene.LoadSceneProp(propId);
             if (entity == null) return null;
 
-            entity.MoveToFrame(new Frame(pos, yaw));
+            entity.MoveToFrame(new Frame(pos, yaw).ToMatrixFrame());
             entity.SetActive(true);
             return entity;
         }

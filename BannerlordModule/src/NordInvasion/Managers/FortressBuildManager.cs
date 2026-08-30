@@ -6,7 +6,7 @@ using TaleWorlds.Core;
 
 namespace NordInvasion.Managers
 {
-    // Mechanic 2: Modular Fort + 14 Destructible
+
     public class FortressBuildManager : MissionBehavior
     {
         // Foundation/Wall - базовые, остальное открывают чертежи из магазина (Mechanic 2/18/23)
@@ -192,7 +192,7 @@ namespace NordInvasion.Managers
             if (perkComp != null && perkComp.BarricadeMod > 1f)
                 repairAmount = (int)(repairAmount * perkComp.BarricadeMod);
 
-            destructible.SetHitPoints(destructible.HitPoints + repairAmount);
+            destructible.HitPoints = destructible.HitPoints + repairAmount;
             InformationManager.DisplayMessage(new InformationMessage($"Repaired {propEntity.Name} +{repairAmount} HP", Colors.Cyan));
         }
 
@@ -211,7 +211,7 @@ namespace NordInvasion.Managers
             var destructible = target.GetFirstScriptOfType<DestructibleComponent>();
             if (destructible == null) return false;
 
-            destructible.SetHitPoints(System.Math.Min(destructible.HitPoints + hitPoints, destructible.MaxHitPoints));
+            destructible.HitPoints = System.Math.Min(destructible.HitPoints + hitPoints, destructible.MaxHitPoints);
             InformationManager.DisplayMessage(new InformationMessage($"Repaired {target.Name} +{hitPoints} HP", Colors.Cyan));
             return true;
         }
@@ -389,103 +389,6 @@ namespace NordInvasion.Managers
                 case BuildType.OilDitch: return new Machines.OilDitchUsable();
                 default: return new Machines.BarricadeDestructible();
             }
-        }
-    }
-
-    public class ScavengeManager : MissionBehavior
-    {
-        // Mechanic 9
-        public override void OnAgentRemoved(Agent affectedAgent, Agent affectorAgent, AgentState agentState, KillingBlow blow)
-        {
-            if (affectedAgent.Team != null && affectedAgent.Team.Side == BattleSideEnum.Attacker
-                && affectorAgent != null && Mission.PlayerTeam != null && affectorAgent.Team == Mission.PlayerTeam)
-            {
-                var comp = affectorAgent.GetComponent<PersistenceManager.PlayerGoldComponent>();
-                if (comp == null) return;
-
-                // Перк Scavenger: +50% ресурсов
-                float mod = 1f;
-                var perkComp = affectorAgent.GetComponent<Components.PerkAgentComponent>();
-                if (perkComp != null && perkComp.HasPerk(24)) mod = 1.5f;
-
-                // 20% metal from veteran+
-                if (affectedAgent.Character != null && (affectedAgent.Character.StringId.Contains("veteran")
-                    || affectedAgent.Character.StringId.Contains("huscarl")
-                    || affectedAgent.Character.StringId.Contains("jarl")))
-                {
-                    if (MBRandom.RandomInt(100) < (int)(20 * mod))
-                    {
-                        comp.AddMetal(1);
-                        InformationManager.DisplayMessage(new InformationMessage("+1 Scrap Metal from veteran!", Colors.Yellow));
-                    }
-                }
-                // 30% wood from any nord
-                if (MBRandom.RandomInt(100) < (int)(30 * mod))
-                {
-                    comp.AddWood(1);
-                }
-            }
-        }
-    }
-
-    public class SquadManager : MissionBehavior
-    {
-        // Mechanic 11: Squads with formations
-        public void SpawnShieldWallSquad(int entryPoint)
-        {
-            var leaderTroop = Game.Current.ObjectManager.GetObject<CharacterObject>("ni_nord_shield_leader");
-            var huscarl = Game.Current.ObjectManager.GetObject<CharacterObject>("ni_nord_huscarl");
-            var archer = Game.Current.ObjectManager.GetObject<CharacterObject>("ni_nord_archer");
-            if (leaderTroop == null || huscarl == null) return;
-
-            var entry = Mission.Current.GetEntryPoint(entryPoint);
-            if (entry == null) return;
-
-            var pos = entry.Position;
-            var team = Mission.Current.Teams.FirstOrDefault(t => t.Side == BattleSideEnum.Attacker);
-            if (team == null) return;
-
-            // Leader
-            var leader = Mission.Current.SpawnAgent(new AgentBuildData(leaderTroop).Team(team).InitialPosition(pos));
-            if (leader != null)
-            {
-                // Лидер отряда (captain formation) - через нативный Formation API
-                var formation = team.GetFormation(FormationClass.Infantry);
-                if (formation != null) formation.Captain = leader;
-            }
-
-            // 3 huscarls front line shieldwall
-            for (int i = 0; i < 3; i++)
-            {
-                var p = pos + new Vec3(i * 1.5f, 1f, 0f);
-                Mission.Current.SpawnAgent(new AgentBuildData(huscarl).Team(team).InitialPosition(p));
-            }
-
-            // 3 archers behind
-            for (int i = 0; i < 3; i++)
-            {
-                if (archer == null) continue;
-                var p = pos + new Vec3(i * 1.5f, -3f, 0f);
-                Mission.Current.SpawnAgent(new AgentBuildData(archer).Team(team).InitialPosition(p));
-            }
-
-            // Регистрация в морали
-            Mission.GetMissionBehavior<Behaviors.MoraleBehavior>()?.RegisterSquad(entryPoint, null);
-
-            InformationManager.DisplayMessage(new InformationMessage($"Shieldwall squad spawned at entry {entryPoint}!", Colors.Yellow));
-        }
-
-        public void SpawnBerserkWedge(int entryPoint)
-        {
-            var berserker = Game.Current.ObjectManager.GetObject<CharacterObject>("ni_nord_berserker");
-            if (berserker == null) return;
-            var entry = Mission.Current.GetEntryPoint(entryPoint);
-            if (entry == null) return;
-            var team = Mission.Current.Teams.FirstOrDefault(t => t.Side == BattleSideEnum.Attacker);
-            if (team == null) return;
-            // Wedge formation - 5 berserkers
-            for (int i = 0; i < 5; i++)
-                Mission.Current.SpawnAgent(new AgentBuildData(berserker).Team(team).InitialPosition(entry.Position + new Vec3(i, i, 0f)));
         }
     }
 }

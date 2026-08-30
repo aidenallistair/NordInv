@@ -24,7 +24,7 @@ namespace NordInvasion.Machines
             {
                 if (agent.Team.Side == BattleSideEnum.Attacker)
                 {
-                    agent.SetHitPoints(0);
+                    agent.Health = 0;
                     InformationManager.DisplayMessage(new InformationMessage($"Rock trap crushed {agent.Name}!", Colors.Green));
                 }
             }
@@ -48,7 +48,7 @@ namespace NordInvasion.Machines
                 foreach (var agent in Mission.Current.GetNearbyAgents(checkPos.AsVec2, 2f))
                 {
                     if (agent.Team.Side == BattleSideEnum.Attacker)
-                        agent.SetHitPoints(agent.Health - 50);
+                        agent.Health = agent.Health - 50;
                 }
             }
             InformationManager.DisplayMessage(new InformationMessage("Log trap triggered! Rolling!", Colors.Yellow));

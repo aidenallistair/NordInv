@@ -62,13 +62,13 @@ namespace NordInvasion.Managers
             }
             if (System.Array.Exists(data.Meta, n => n == "veteran_1"))
             {
-                agent.SetMaximumHitPoints((int)(agent.HealthLimit * 1.05f));
+                agent.HealthLimit = (int)(agent.HealthLimit * 1.05f);
                 var comp = agent.GetComponent<PersistenceManager.PlayerGoldComponent>();
                 if (comp != null) comp.Gold += 100;
             }
             if (System.Array.Exists(data.Meta, n => n == "veteran_2"))
             {
-                agent.SetMaximumHitPoints((int)(agent.HealthLimit * 1.1f));
+                agent.HealthLimit = (int)(agent.HealthLimit * 1.1f);
             }
             if (System.Array.Exists(data.Meta, n => n == "engineer_1") || System.Array.Exists(data.Meta, n => n == "engineer_2"))
             {

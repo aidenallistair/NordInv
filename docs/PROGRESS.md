@@ -280,3 +280,57 @@ UIExtender-миксинов, либо проверочного поведени�
 на машине с игрой -> запуск миссии -> `bash src/backend-php/tests/smoke.sh` на хосте
 -> NexusMods.
 
+
+## Session 6 (2026-08-30): рефакторинг структуры + фикс Agent.Health (этап 0 «компиляция»)
+
+Решение по архитектуре: Dedicated MP — основной путь, UI через UIExtenderEx,
+backend PHP — эталон, структура кода — отдельные файлы, приоритет — сборка dll.
+
+**Сделано:**
+1. **Рефакторинг (без изменения логики, 7 классов вынесены в отдельные файлы):**
+   - `ScavengeManager`, `SquadManager` ← `Managers/FortressBuildManager.cs`
+   - `PerkManager`, `LootManager` ← `Managers/PersistenceManager.cs`
+   - `NordInvasionObjectiveBehavior`, `NordInvasionMutatorBehavior`,
+     `NordInvasionCampaignBehavior` ← `Behaviors/NordInvasionWeatherBehavior.cs`
+   - Проверено: тела всех 7 классов байт-в-байт идентичны оригиналам из git HEAD.
+   - Заодно исправлены латентные CS0246: `NordInvasionObjectiveBehavior` без
+     `using NordInvasion.Models` (`WaveObjective`), `NordInvasionCampaignBehavior`
+     без `using TaleWorlds.CampaignSystem` (`CampaignBehaviorBase`).
+2. **Фикс `Agent.SetHitPoints`/`SetMaximumHitPoints` → `Agent.Health`/`HealthLimit`:**
+   этих методов у `Agent` в Bannerlord нет (CS1061); у него сеттерные свойства
+   `int Health` и `int HealthLimit`. Заменено 20 вызовов в 7 файлах.
+   `destructible.SetHitPoints` (DestructibleComponent) не тронут.
+3. **tools/lint_csharp.py**: добавлена проверка неоднозначных публичных API —
+   ошибка на `SetHitPoints` для агентов (регрессия) + предупреждения на
+   `SpawnMissile`, `AddExplosion`, `LoadSceneProp`, `SetFog`, `Formation.Captain`,
+   `destructible.SetHitPoints` — чтобы точки проверки по DLL не потерялись.
+4. **docs/COMPILE_RISKS.md**: чек-лист известных API-рисков с точными позициями
+   и кандидатными фиксами для первой сборки.
+
+**Статус:** линтер 0 ошибок / 10 предупреждений (все — «сверить по DLL»),
+validate_module 0 ошибок / 12 варнингов (террейн). Код готов к первой сборке на
+машине с Bannerlord; как её соберёшь — присылай `rgl_log.txt`, закроем по таблице
+`docs/COMPILE_RISKS.md`.
+
+**Дальше по этапу 0:** верификация DLL по `docs/COMPILE_RISKS.md` (таблица выше),
+затем этап 1 — UIExtenderEx-миксины к 4 экранам.
+
+### Session 6 (продолжение): портирование C# под Bannerlord 1.4.8
+
+Точечное портирование гарантированных несовместимостей с API 1.4.8 (линтер 0 ошибок,
+4 предупреждения «сверить по DLL»):
+
+1. **`Agent.SetHitPoints`/`SetMaximumHitPoints` → `Agent.Health`/`HealthLimit`** — сделано ранее (20 вызовов).
+2. **`Mission.SpawnMissile(5-арг)` → `Mission.AddExplosion`** (баллиста): 5-арг перегрузки нет → CS1501.
+3. **`Scene.SetFog(30f, 0x888888)` → `SetFog(..., (uint)0x...)`**: 2-й аргумент `uint`, int-literal → CS1503.
+4. **`OnTickAsAI` → `OnTick`** (Medic/Banner/Elemental/WoundStamina): `OnTickAsAI` не виртуал `AgentComponent` → CS0115.
+5. **`destructible.SetHitPoints(x)` → `destructible.HitPoints = x`** (RoleComponents, FortressBuildManager): метод не существует → CS1061.
+6. **`entryPoint.Direction` → убрано** (WaveManager): нет свойства `GameEntity.Direction`.
+7. **`MoveToFrame(Frame)` → `MoveToFrame(Frame.ToMatrixFrame())`** (PropSpawner): ожидает `MatrixFrame`.
+
+Осталось верифицировать по DLL (см. `docs/COMPILE_RISKS.md`): `Mission.AddExplosion`,
+`Formation.Captain`, `Scene.AddParticleSystem(string,Vec3)`, `SetRainDensity/SetSnowDensity/
+SetTimeOfDay`, `SetTargetForAI`, `SetTimeSpeed`, campaign-события, и **весь MP-слой**
+(регистрация сетевых сообщений, `MissionMultiplayerGameModeBase*`, спавн) — его правим
+только по реальному `rgl_log.txt`. Singleplayer Custom Battle собирается раньше и от
+MP-регистрации не зависит.

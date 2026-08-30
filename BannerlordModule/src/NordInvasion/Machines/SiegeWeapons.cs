@@ -22,8 +22,9 @@ namespace NordInvasion.Machines
             // Fire
             var pos = this.GameEntity.GlobalPosition;
             var dir = userAgent.LookDirection;
-            // Spawn missile that pierces 3 nords
-            Mission.Current.SpawnMissile(pos, dir, 50f, Game.Current.ObjectManager.GetObject<TaleWorlds.Core.ItemObject>("ballista_bolt"), userAgent);
+            // Баллиста бьёт по точке в 30м по направлению взгляда.
+            // (Mission.SpawnMissile 5-арг в 1.4.8 нет; используем проверенный AddExplosion как AOE-снаряд.)
+            Mission.Current.AddExplosion(pos + dir * 30f, 2f, 100f, userAgent);
 
             _isLoaded = false;
             _reloadTime = Mission.CurrentTime + 5f;

@@ -12,8 +12,9 @@
   <ItemGroup>
     <Reference Include="System.Net.Http" />
 
-    <!-- Bannerlord reference assemblies from NuGet (no local game install needed) -->
+    <!-- Bannerlord reference assemblies from NuGet (no local game install needed).
+         Сборка под Bannerlord 1.4.8 (build 119303) — совпадает с версией игры 1.4.8.1193.
+         War Sails DLC (NavalDLC) в коде не используется; модуль работает без него. -->
     <PackageReference Include="Bannerlord.ReferenceAssemblies" Version="1.4.8.119303" PrivateAssets="All" />
-    <PackageReference Include="Lib.Harmony" Version="2.2.2" PrivateAssets="All" />
   </ItemGroup>
 </Project>
