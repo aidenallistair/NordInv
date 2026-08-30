@@ -1,20 +1,20 @@
 <Module>
     <Name value="Nord Invasion Better Edition"/>
     <Id value="NordInvasion"/>
-    <Version value="v2.2.0"/>
+    <Version value="v2.3.0"/>
     <SingleplayerModule value="true"/>
     <MultiplayerModule value="true"/>
     <ModuleCategory value="Multiplayer"/>
     <DependedModules>
+        <!-- Сборка под Bannerlord 1.4.8 (без War Sails / морского DLC).
+             ButterLib/UIExtenderEx/MCM в коде не используются — убраны из жёстких
+             зависимостей, чтобы модуль работал на чистой 1.4.8 без лишних модов. -->
         <DependedModule Id="Native"/>
         <DependedModule Id="SandBoxCore"/>
         <DependedModule Id="Sandbox"/>
         <DependedModule Id="CustomBattle"/>
-        <DependedModule Id="Multiplayer" DependentVersion="e1.2.10" Optional="false"/>
-        <DependedModule Id="StoryMode" DependentVersion="e1.2.10" Optional="true"/>
-        <DependedModule Id="ButterLib" DependentVersion="2.8.11" Optional="false"/>
-        <DependedModule Id="UIExtenderEx" DependentVersion="2.8.0" Optional="false"/>
-        <DependedModule Id="ModConfigurationMenuv5" DependentVersion="5.9.0" Optional="false"/>
+        <DependedModule Id="Multiplayer" DependentVersion="e1.4.8" Optional="false"/>
+        <DependedModule Id="StoryMode" DependentVersion="e1.4.8" Optional="true"/>
     </DependedModules>
     <SubModules>
         <SubModule>

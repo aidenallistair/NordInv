@@ -72,15 +72,7 @@
       <Private>false</Private>
     </Reference>
     <!-- Для MP сервера - те же DLL, но в Dedicated Server папке, для клиента хватает Client DLL -->
-    <!-- Harmony / ButterLib - берём из NuGet или из Modules, если уже установлены -->
-    <PackageReference Include="Lib.Harmony" Version="2.2.2" PrivateAssets="All" />
-    <!-- Если хочешь без NuGet - раскомментируй и укажи путь к 0Harmony.dll -->
-    <!--
-    <Reference Include="0Harmony">
-      <HintPath>$(BannerlordPath)\Modules\Bannerlord.Harmony\bin\Win64_Shipping_Client\0Harmony.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    -->
+    <!-- Harmony / ButterLib не используются в коде (модуль работает на чистой 1.4.8 без них) -->
   </ItemGroup>
 
   <!-- Копируем DLL в Server папку после сборки, чтобы Dedicated сервер видел -->

@@ -1,9 +1,26 @@
-# Nord Invasion Better Edition v2.2.0
+# Nord Invasion Better Edition v2.3.0
 
 
-Кооперативный PvE мод для Mount & Blade II: Bannerlord (1.2.10+).
+Кооперативный PvE мод для Mount & Blade II: Bannerlord (1.4.8, build 1193).
 Команда 4-32 игроков держит форт против 25 волн нордов.
 С 2.2.0 основной путь — встроенный Dedicated MP (GameType NordInvasion), как у Full Invasion 3.
+
+## v2.3.0 — под Bannerlord 1.4.8, без War Sails (2026-08-30)
+
+**Цель:** сборка под конкретную версию игры 1.4.8.1193 и запуск на чистой 1.4.8
+без морского DLC War Sails.
+
+**Новое / изменено:**
+- `NordInvasion.csproj`: reference assemblies `Bannerlord.ReferenceAssemblies 1.4.8.119303`
+  (совпадает с игрой 1.4.8.1193); убран неиспользуемый `Lib.Harmony`.
+- `SubModule.xml`: версия `v2.3.0`; убраны неиспользуемые жёсткие зависимости
+  ButterLib / UIExtenderEx / MCMv5 — модуль работает без внешних модов;
+  `DependentVersion` модулей Multiplayer/StoryMode обновлены на `e1.4.8`.
+- War Sails / NavalDLC в коде и данных не используется — модуль не требует DLC.
+- Документация обновлена: требования сборки/запуска — Bannerlord 1.4.8, без War Sails,
+  без внешних модов.
+
+**Совместимость:** Custom Battle (singleplayer) и Dedicated MP (GameType NordInvasion) — оба пути.
 
 ## v2.2.0 — встроенный мультиплеер вместо Co-op мода (2026-08-29)
 

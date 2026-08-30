@@ -3,7 +3,7 @@
 ## Для игрока (самый простой)
 
 ### Требования:
-- Mount & Blade II: Bannerlord 1.2.10+ (Steam)
+- Mount & Blade II: Bannerlord 1.4.8 (Steam), без War Sails DLC
 - 8GB RAM, 4 ядра
 
 ### Установка:

@@ -51,7 +51,7 @@
 
 - 29 механик реализованы в C# скелете
 - Все без BLSE, кроме 16 и 27 где BLSE даст плюсы
-- Готов к компиляции в Bannerlord 1.2.10+
+- Готов к компиляции в Bannerlord 1.4.8 (без War Sails DLC)
 - Backend поддерживает все: gold, wood, metal, blueprints, seasons, villages, battlepass
 
 ## Как тестировать без питомцев

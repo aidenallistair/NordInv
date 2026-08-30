@@ -6,13 +6,10 @@
 
 ### Что сделать:
 
-1. Установи Bannerlord 1.2.10+ через Steam
+1. Установи Bannerlord 1.4.8 через Steam (без War Sails DLC)
 2. Установи Modding Kit: Steam -> Library -> Tools -> Mount & Blade II Bannerlord - Modding Kit
-3. Установи зависимости с NexusMods:
-   - ButterLib 2.8.11+
-   - UIExtenderEx 2.8.0+
-   - Mod Configuration Menu v5 5.9.0+
-   - (опционально) Bannerlord Co-op 1.2.0+ для теста коопа
+3. Внешние моды (ButterLib/UIExtenderEx/MCM) не требуются — в коде не используются;
+   (опционально) Bannerlord Co-op 1.2.0+ для теста коопа
 
 4. Склонируй репо:
    ```
@@ -361,8 +358,8 @@
 
 ### Для игрока:
 
-1. Установи Bannerlord 1.2.10+
-2. Установи ButterLib, UIExtenderEx, MCMv5 с Nexus
+1. Установи Bannerlord 1.4.8 (без War Sails DLC)
+2. Внешние моды (ButterLib/UIExtenderEx/MCM) не требуются
 3. Скачай NordInvasion, закинь в `Modules/`
 4. Включи в лаунчере
 5. Custom Battle -> mp_ni_bridge_01 -> mp_nord_invasion

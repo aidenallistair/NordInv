@@ -38,7 +38,7 @@ docs/BANNERLORD_PLAN_RU.md - полный план реализации 15 ме�
 ## Быстрый старт для разработки
 
 1. Установи Bannerlord + Modding Kit (Steam -> Tools)
-2. Установи зависимости с Nexus: ButterLib, UIExtenderEx, ModConfigurationMenu v5
+2. Установи зависимости с Nexus: ButterLib, UIExtenderEx, ModConfigurationMenu v5 — **не требуются** для v2.3.0 (не используются в коде)
 3. Склонируй репо в `.../Mount & Blade II Bannerlord/Modules/NordInvasion/`
 4. Открой `BannerlordModule/NordInvasion.csproj` в Rider/VS, пропиши пути к TaleWorlds.*.dll
 5. Скомпилируй -> `Modules/NordInvasion/bin/Win64_Shipping_Client/NordInvasion.dll`

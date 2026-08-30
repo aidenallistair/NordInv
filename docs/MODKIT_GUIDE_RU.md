@@ -48,10 +48,10 @@ BannerlordModule/                # исходники в репо
 ## 3. Быстрый старт под ModKit (Windows)
 
 ### 3.1 Требования
-- Bannerlord 1.2.10+ (Steam)
+- Bannerlord 1.4.8 (Steam), без War Sails DLC
 - ModKit (Steam → Tools)
 - .NET SDK 4.7.2 + .NET 6 (для `dotnet build`) или Visual Studio 2022
-- Зависимости Nexus: ButterLib, UIExtenderEx, MCMv5 (включить в лаунчере)
+- Без внешних модов (ButterLib/UIExtenderEx/MCM не требуются для v2.3.0)
 
 ### 3.2 Клонирование прямо в Modules
 
