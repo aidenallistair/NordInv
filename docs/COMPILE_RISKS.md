@@ -16,41 +16,64 @@
 3. Правки — точечные; линтер (`tools/lint_csharp.py`) сам подсвечивает места,
    где остались неоднозначные API (0 ошибок = синтаксис/usings/контракты целы).
 
-## Уже исправлено статически (не должно больше падать)
+## Уже исправлено статически (портирование под 1.4.8, session 6)
 
 | Было | Стало | Где |
 |---|---|---|
 | `Agent.SetHitPoints(x)` | `Agent.Health = x` | 20 вызовов в ElementalComponent, WoundStaminaComponent, RoleComponents, BarricadeMachines, TrapMachines, MetaProgressionManager, PersistenceManager |
 | `Agent.SetMaximumHitPoints(x)` | `Agent.HealthLimit = x` | WoundStaminaComponent, MetaProgressionManager |
+| `Mission.Current.SpawnMissile(pos, dir, 50f, item, userAgent)` (5-арг) | `Mission.Current.AddExplosion(pos + dir * 30f, 2f, 100f, userAgent)` | SiegeWeapons (баллиста) |
+| `Scene.SetFog(30f, 0x888888)` / `SetFog(100f, 0xFFFFFF)` | `SetFog(..., (uint)0x...)` | NordInvasionWeatherBehavior |
+| `override void OnTickAsAI(float)` (4 класса) | `override void OnTick(float)` | MedicComponent, BannerComponent, ElementalComponent, WoundStaminaComponent |
+| `destructible.SetHitPoints(x)` | `destructible.HitPoints = x` | RoleComponents, FortressBuildManager (3 места) |
+| `...InitialDirection(entryPoint.Direction)` | убрано (нет свойства `GameEntity.Direction`) | NordInvasionWaveManagerBehavior |
+| `entity.MoveToFrame(new Frame(pos, yaw))` | `entity.MoveToFrame(new Frame(pos, yaw).ToMatrixFrame())` | PropSpawner |
 
 `Agent` не имеет методов `SetHitPoints`/`SetMaximumHitPoints` (CS1061); у него
-сеттерные свойства `int Health` и `int HealthLimit`.
+сеттерные свойства `int Health` и `int HealthLimit`. `DestructibleComponent.HitPoints`
+и `MaxHitPoints` — сеттерные свойства.
 
 ## Осталось верифицировать по DLL (все помечены `WARN` в линтере)
 
 | # | Место | Вызов | Риск | Кандидатный фикс |
 |---|---|---|---|---|
-| 1 | `Machines/SiegeWeapons.cs:26` | `Mission.Current.SpawnMissile(pos, dir, 50f, item, userAgent)` | Сигнатура 5-арг может не совпасть | Проверить перегрузки `Mission.SpawnMissile`; обычно нужны `shooterAgent`, `weaponData` |
-| 2 | `Behaviors/BossPhaseBehavior.cs:83`, `Components/ElementalComponent.cs:140`, `Machines/SiegeWeapons.cs:53` | `Mission.Current.AddExplosion(pos, r, dmg, agent)` | Сигнатура не подтверждена | Проверить `Mission.AddExplosion` (возможно `(Vec3, float, float, Agent, int extraHitCount=0)`) |
-| 3 | `Machines/PropSpawner.cs:33` | `scene.LoadSceneProp(propId)` | Есть ли 1-арг перегрузка | Если CS1503 — `LoadSceneProp(propId, frame)` и передавать `MatrixFrame` |
-| 4 | `Behaviors/NordInvasionWeatherBehavior.cs:25,42` | `Scene.SetFog(30f, 0x888888)` | 2-й аргумент может быть `uint` → int→uint нет неявного | `(uint)0x888888` |
-| 5 | `Managers/SquadManager.cs:30` | `formation.Captain = leader` | Нет ли публичного setter | `Formation.Captain` обычно сеттерный; если нет — заменить на API формирования |
-| 6 | `Components/RoleComponents.cs:102`, `Managers/FortressBuildManager.cs:195,214` | `destructible.SetHitPoints(...)` | `DestructibleComponent.SetHitPoints` — сигнатура | Проверить `HitPoints`/`MaxHitPoints` setter |
-| 7 | Все `Components/*`, `Behaviors/*` | `override void OnTickAsAI(float)` (4 класса) | Виртуала нет в 1.0.3 | В 1.2+/1.4 `OnTickAsAI(float)` есть; если CS0115 — заменить на `OnTick` |
+| 1 | `BossPhaseBehavior.cs`, `ElementalComponent.cs`, `SiegeWeapons.cs` | `Mission.AddExplosion(pos, r, dmg, agent)` | Сигнатура (4-арг, `extraHitCount` опц.) | Проверить `AddExplosion(Vec3, float, float, Agent, int=0)` |
+| 2 | `SquadManager.cs:30` | `formation.Captain = leader` | Нет ли публичного setter | Если CS0200 — заменить на `formation.UnitLeaderAgent`/API формирования |
+| 3 | `BossPhaseBehavior.cs:69`, `BarricadeMachines.cs:33,182`, `TrapMachines.cs:20,71,80`, `SiegeWeapons.cs:64` | `Scene.AddParticleSystem(string, Vec3)` | Есть ли перегрузка `(string, Vec3)` (может быть `(string, ref MatrixFrame)`) | Если CS1503 — `AddParticleSystem(name, ref frame)` |
+| 4 | `NordInvasionWeatherBehavior.cs` | `Scene.SetRainDensity/SetSnowDensity/SetTimeOfDay(float)` | Существуют ли на `Scene` | Проверить по DLL; снег может быть через `SetSnowDensity` |
+| 5 | `WaveManager.cs` (`Marked` мутатор) | `bot.SetTargetForAI(agent)` | Нет ли метода `SetTargetForAI(Agent)` | Проверить `Agent.SetTargetForAI` / `SetScriptedTarget` |
+| 6 | `LastStand.cs`, `SpectatorBetting.cs` | `Mission.Current.SetTimeSpeed(float)` | Существует ли | Проверить `Mission.SetTimeSpeed(float)` |
+| 7 | `NordInvasionCampaignBehavior.cs` | `CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched)` с сигнатурой `(CampaignGameStarter)` | Тип события может быть `Action` | Если CS1502 — сменить сигнатуру хэндлера на без-арг |
 
-## MP-слой — самый свежий и не компилировался
+## MP-слой — самый свежий, ни разу не компилировался (нужен реальный прогон)
 
-`Multiplayer/` (GameMode, MissionMultiplayer*, NIMissionRepresentative, NISpawnBehaviors,
-NINetworkMessages) использует официальный неткод Bannerlord:
+`Multiplayer/` (GameMode, MissionMultiplayerNordInvasion(+Client), NIMissionRepresentative,
+NISpawnBehaviors, NINetworkMessages). Использует официальный неткод, но написан
+«вслепую» по 1.2-доке — на 1.4.8 сигнатуры могли разойтись. Вероятные точки:
 
-- `GameNetworkMessage` + `WriteIntToPacket/ReadIntFromPacket/WriteStringToPacket/
-  ReadStringFromPacket`, `CompressionInfo.Integer` — для 1.2.x выглядит корректно.
-- Регистрация обработчиков в `MissionMultiplayerNordInvasion.AddRemoveMessageHandlers`
-  сделана через reflection с fallback на `GameNetwork.NetworkMessageHandlerRegisterer`
-  — это площадка, где чаще всего будут расходиться сигнатуры между патчами.
+- `MissionMultiplayerGameModeBase` / `...BaseClient`: `AfterStart()`,
+  `HandleNewClientAfterSynchronized(NetworkCommunicator)`,
+  `HandleNewClientAfterLoadingFinished`, `OnPeerChangedTeam`, `GetScoreForKill/Assist`,
+  `CheckForMatchEnd()`, `GetWinnerTeam()`, `GetMissionType()` — виртуальны ли,
+  совпадают ли сигнатуры.
+- `Mission.Teams.Add(BattleSideEnum, uint, uint, Banner, bool, bool, bool)` — сигнатура.
+- `MBMultiplayerOptionsAccessor.SetCultureTeam1/2(BasicCultureObject)` — существуют ли.
+- `peer.ControlledAgent.Team = team` — сеттер `Agent.Team` рискован.
+- Регистрация обработчиков `GameNetwork.NetworkMessageHandlerRegistererContainer`,
+  `GameNetworkMessage.ClientMessageHandlerDelegate<T>`/`ServerMessageHandlerDelegate<T>`,
+  `GameNetwork.AddNetworkHandler`, интерфейс `TaleWorlds.MountAndBlade.IUdpNetworkHandler`
+  — на 1.4.8 API регистрации сообщений менялся (это самая вероятная зона CS-ошибок).
+- `SpawnFrameBehaviorBase.GetSpawnFrame(Team, bool, bool)` / `SpawningBehaviorBase`
+  (`Initialize(SpawnComponent)`, `SpawnAgents()`, `GetMaximumReSpawnPeriodForPeer`,
+  `AllowEarlyAgentVisualsDespawning`) — сигнатуры виртуалов.
+- `MissionRepresentativeBase.OnPeerVariableChanged()` — есть ли виртуал.
+- `GameNetwork.BeginBroadcastModuleEvent()/EndBroadcastModuleEvent(GameNetwork.EventBroadcastFlags)`
+  — в новых версиях enum мог переехать в другой namespace.
 
-Если в MP-коде будут CS-ошибки, править по `rgl_log` в порядке появления.
-Контракт стройки (клиент→сервер→broadcast) от этого не зависит — это чистый C#.
+**Рекомендация:** MP-слой править только по реальному `rgl_log.txt` — это самая
+большая зона неопределённости. Одиночный Custom Battle (singleplayer) соберётся
+раньше и не зависит от MP-кода в части регистрации сообщений (миссии запускаются
+через `OnMissionBehaviorInitialize`).
 
 ## Рекомендуемый порядок при сборке
 

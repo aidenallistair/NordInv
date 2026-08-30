@@ -40,7 +40,7 @@ namespace NordInvasion.Components
             return true;
         }
 
-        public override void OnTickAsAI(float dt)
+        public override void OnTick(float dt)
         {
             if (_target != null && _target.IsActive())
             {
@@ -99,7 +99,7 @@ namespace NordInvasion.Components
                 var perk = Agent.GetComponent<PerkAgentComponent>();
                 if (perk != null) repair = (int)(repair * perk.BarricadeMod);
 
-                destructible.SetHitPoints(destructible.HitPoints + repair);
+                destructible.HitPoints = destructible.HitPoints + repair;
                 InformationManager.DisplayMessage(new InformationMessage($"Repaired {prop.Name} +{repair} HP", Colors.Cyan));
             }
         }
@@ -113,7 +113,7 @@ namespace NordInvasion.Components
 
         public BannerComponent(Agent agent) : base(agent) { }
 
-        public override void OnTickAsAI(float dt)
+        public override void OnTick(float dt)
         {
             if (Mission.CurrentTime - _lastBuffTime > 2f)
             {

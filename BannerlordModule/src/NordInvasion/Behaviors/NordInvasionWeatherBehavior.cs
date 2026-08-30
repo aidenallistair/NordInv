@@ -22,7 +22,7 @@ namespace NordInvasion.Behaviors
             switch (weather)
             {
                 case 1:
-                    Mission.Current.Scene.SetFog(30f, 0x888888);
+                    Mission.Current.Scene.SetFog(30f, (uint)0x888888);
                     InformationManager.DisplayMessage(new InformationMessage("Fog! Archers -50% range", Colors.Yellow));
                     break;
                 case 2:
@@ -39,7 +39,7 @@ namespace NordInvasion.Behaviors
                     InformationManager.DisplayMessage(new InformationMessage("Night! Torches needed!", Colors.Gold));
                     break;
                 default:
-                    Mission.Current.Scene.SetFog(100f, 0xFFFFFF);
+                    Mission.Current.Scene.SetFog(100f, (uint)0xFFFFFF);
                     Mission.Current.Scene.SetRainDensity(0f);
                     break;
             }

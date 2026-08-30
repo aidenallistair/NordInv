@@ -37,9 +37,9 @@ namespace NordInvasion.Components
             }
         }
 
-        public override void OnTickAsAI(float dt)
+        public override void OnTick(float dt)
         {
-            base.OnTickAsAI(dt);
+            base.OnTick(dt);
 
             if (Mission.CurrentTime > _duration)
             {

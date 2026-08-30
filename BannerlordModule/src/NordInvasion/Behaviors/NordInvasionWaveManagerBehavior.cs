@@ -260,7 +260,7 @@ namespace NordInvasion.Behaviors
                 if (entryPoint == null) continue;
 
                 var pos = entryPoint.Position;
-                var agent = Mission.Current.SpawnAgent(new AgentBuildData(troop).Team(_nordTeam).InitialPosition(pos).InitialDirection(entryPoint.Direction));
+                var agent = Mission.Current.SpawnAgent(new AgentBuildData(troop).Team(_nordTeam).InitialPosition(pos));
                 if (agent != null)
                 {
                     _spawnedNords.Add(agent);

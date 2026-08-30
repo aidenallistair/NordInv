@@ -192,7 +192,7 @@ namespace NordInvasion.Managers
             if (perkComp != null && perkComp.BarricadeMod > 1f)
                 repairAmount = (int)(repairAmount * perkComp.BarricadeMod);
 
-            destructible.SetHitPoints(destructible.HitPoints + repairAmount);
+            destructible.HitPoints = destructible.HitPoints + repairAmount;
             InformationManager.DisplayMessage(new InformationMessage($"Repaired {propEntity.Name} +{repairAmount} HP", Colors.Cyan));
         }
 
@@ -211,7 +211,7 @@ namespace NordInvasion.Managers
             var destructible = target.GetFirstScriptOfType<DestructibleComponent>();
             if (destructible == null) return false;
 
-            destructible.SetHitPoints(System.Math.Min(destructible.HitPoints + hitPoints, destructible.MaxHitPoints));
+            destructible.HitPoints = System.Math.Min(destructible.HitPoints + hitPoints, destructible.MaxHitPoints);
             InformationManager.DisplayMessage(new InformationMessage($"Repaired {target.Name} +{hitPoints} HP", Colors.Cyan));
             return true;
         }

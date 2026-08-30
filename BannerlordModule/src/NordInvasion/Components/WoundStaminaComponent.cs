@@ -68,7 +68,7 @@ namespace NordInvasion.Components
             Stamina = 50f;
         }
 
-        public override void OnTickAsAI(float dt)
+        public override void OnTick(float dt)
         {
             // Regen stamina slowly if not hit recently
             if (Mission.CurrentTime - _lastHitTime > 3f && Stamina < 100)

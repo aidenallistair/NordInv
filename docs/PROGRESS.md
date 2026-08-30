@@ -314,3 +314,23 @@ validate_module 0 ошибок / 12 варнингов (террейн). Код 
 
 **Дальше по этапу 0:** верификация DLL по `docs/COMPILE_RISKS.md` (таблица выше),
 затем этап 1 — UIExtenderEx-миксины к 4 экранам.
+
+### Session 6 (продолжение): портирование C# под Bannerlord 1.4.8
+
+Точечное портирование гарантированных несовместимостей с API 1.4.8 (линтер 0 ошибок,
+4 предупреждения «сверить по DLL»):
+
+1. **`Agent.SetHitPoints`/`SetMaximumHitPoints` → `Agent.Health`/`HealthLimit`** — сделано ранее (20 вызовов).
+2. **`Mission.SpawnMissile(5-арг)` → `Mission.AddExplosion`** (баллиста): 5-арг перегрузки нет → CS1501.
+3. **`Scene.SetFog(30f, 0x888888)` → `SetFog(..., (uint)0x...)`**: 2-й аргумент `uint`, int-literal → CS1503.
+4. **`OnTickAsAI` → `OnTick`** (Medic/Banner/Elemental/WoundStamina): `OnTickAsAI` не виртуал `AgentComponent` → CS0115.
+5. **`destructible.SetHitPoints(x)` → `destructible.HitPoints = x`** (RoleComponents, FortressBuildManager): метод не существует → CS1061.
+6. **`entryPoint.Direction` → убрано** (WaveManager): нет свойства `GameEntity.Direction`.
+7. **`MoveToFrame(Frame)` → `MoveToFrame(Frame.ToMatrixFrame())`** (PropSpawner): ожидает `MatrixFrame`.
+
+Осталось верифицировать по DLL (см. `docs/COMPILE_RISKS.md`): `Mission.AddExplosion`,
+`Formation.Captain`, `Scene.AddParticleSystem(string,Vec3)`, `SetRainDensity/SetSnowDensity/
+SetTimeOfDay`, `SetTargetForAI`, `SetTimeSpeed`, campaign-события, и **весь MP-слой**
+(регистрация сетевых сообщений, `MissionMultiplayerGameModeBase*`, спавн) — его правим
+только по реальному `rgl_log.txt`. Singleplayer Custom Battle собирается раньше и от
+MP-регистрации не зависит.
