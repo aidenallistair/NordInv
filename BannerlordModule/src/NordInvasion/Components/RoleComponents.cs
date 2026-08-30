@@ -80,7 +80,7 @@ namespace NordInvasion.Components
             if (target == null || !target.IsActive()) return;
             if (Agent.Position.Distance(target.Position) > 2f) return;
 
-            target.SetHitPoints(System.Math.Min(target.Health + 30, target.HealthLimit));
+            target.Health = System.Math.Min(target.Health + 30, target.HealthLimit);
             var goldComp = Agent.GetComponent<Managers.PersistenceManager.PlayerGoldComponent>();
             goldComp?.AddGold(2);
         }

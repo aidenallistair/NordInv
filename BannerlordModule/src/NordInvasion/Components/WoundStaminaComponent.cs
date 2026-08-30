@@ -43,7 +43,7 @@ namespace NordInvasion.Components
             {
                 // Second chance once per wave
                 InformationManager.DisplayMessage(new InformationMessage("Second Wind! Second chance!", Colors.Green));
-                Agent.SetHitPoints(30);
+                Agent.Health = 30;
                 return true; // not fallen, just second wind
             }
 
@@ -63,7 +63,7 @@ namespace NordInvasion.Components
         public void Revive()
         {
             IsFallen = false;
-            Agent.SetHitPoints(50);
+            Agent.Health = 50;
             Agent.SetMaximumSpeedFactor(1f);
             Stamina = 50f;
         }
@@ -85,7 +85,7 @@ namespace NordInvasion.Components
                 // Regen 2 HP/sec outside combat
                 if (Mission.CurrentTime - _lastHitTime > 5f && Agent.Health < Agent.HealthLimit)
                 {
-                    Agent.SetHitPoints(Agent.Health + (int)(dt * 2f));
+                    Agent.Health = Agent.Health + (int)(dt * 2f);
                 }
             }
         }
@@ -120,8 +120,8 @@ namespace NordInvasion.Components
             {
                 case 0: // Iron Skin I
                 case 1: // Iron Skin II
-                    Agent.SetMaximumHitPoints((int)(Agent.HealthLimit * (1f + def.HpMod)));
-                    Agent.SetHitPoints(Agent.HealthLimit);
+                    Agent.HealthLimit = (int)(Agent.HealthLimit * (1f + def.HpMod));
+                    Agent.Health = Agent.HealthLimit;
                     break;
                 case 10: // Bloodlust handled in OnHit
                     break;

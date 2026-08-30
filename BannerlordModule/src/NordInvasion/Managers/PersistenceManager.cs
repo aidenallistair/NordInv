@@ -576,7 +576,7 @@ namespace NordInvasion.Managers
                         if (comp != null && !string.IsNullOrEmpty(arg) && !comp.Cosmetics.Contains(arg)) comp.Cosmetics.Add(arg);
                         break;
                     case "heal":
-                        if (value > 0) agent.SetHitPoints((int)System.Math.Min(agent.Health + value, agent.HealthLimit));
+                        if (value > 0) agent.Health = (int)System.Math.Min(agent.Health + value, agent.HealthLimit);
                         break;
                     case "ammo":
                         build?.SpawnAmmoBox(agent.Position);

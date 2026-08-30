@@ -364,7 +364,37 @@ def check_behavior_registration(files: dict[str, str]) -> None:
             err(f"SubModule.cs регистрирует {cls}, которого нет в исходниках")
 
 
-# --------------------------------------------------------------- 7) заглушки
+# ------------------------------------------------- 7) неоднозначные публичные API
+
+# API Bannerlord, которые не сверены по справочнику (проверяются только сборкой).
+# Здесь они отслеживаются, чтобы не «потерять» точку проверки перед компиляцией.
+def check_uncertain_apis(files: dict[str, str]) -> None:
+    for rel, src in files.items():
+        code = strip_code(src)
+        # --- регрессия: Agent.SetHitPoints/SetMaximumHitPoints не существует.
+        # После фикса остались только destructible.SetHitPoints (DestructibleComponent).
+        for m in re.finditer(r"(\w+)\.(SetHitPoints|SetMaximumHitPoints)\s*\(", code):
+            receiver, meth = m.group(1), m.group(2)
+            if receiver == "destructible":
+                # DestructibleComponent — валидно, но сигнатуру всё равно сверить по DLL
+                warn(f"{rel}: destructible.{meth}(...) (DestructibleComponent) - проверить сигнатуру при сборке")
+            else:
+                err(f"{rel}: {receiver}.{meth}(...) - метода у Agent нет, используй {receiver}.Health / {receiver}.HealthLimit = ...")
+
+        # --- оставшиеся публичные API, требующие подтверждения по DLL 1.4.8
+        if re.search(r"\.SpawnMissile\s*\(", code):
+            warn(f"{rel}: Mission.SpawnMissile(...) - сигнатура 5-арг не подтверждена, проверить по DLL")
+        if re.search(r"\.AddExplosion\s*\(", code):
+            warn(f"{rel}: Mission.AddExplosion(...) - сигнатура не подтверждена, проверить по DLL")
+        if re.search(r"\.LoadSceneProp\s*\(\s*[\"']", code):
+            warn(f"{rel}: Scene.LoadSceneProp(propId) - существует ли 1-арг перегрузка, проверить по DLL")
+        if re.search(r"\.SetFog\s*\([^)]*0x", code):
+            warn(f"{rel}: Scene.SetFog(..., 0x...) - второй аргумент может быть uint (нужен (uint)0x...), проверить")
+        if re.search(r"\.Captain\s*=", code):
+            warn(f"{rel}: Formation.Captain = ... - есть ли публичный setter, проверить по DLL")
+
+
+# --------------------------------------------------------------- 8) заглушки
 
 def check_stubs(files: dict[str, str]) -> None:
     todos = 0
@@ -399,6 +429,7 @@ def run(files: dict[str, str] | None = None) -> tuple[list[str], list[str], list
     check_backend_contract(files)
     check_shop_catalog(files)
     check_behavior_registration(files)
+    check_uncertain_apis(files)
     check_stubs(files)
     return errors, warnings, info
 

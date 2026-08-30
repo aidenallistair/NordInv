@@ -61,7 +61,7 @@ namespace NordInvasion.Components
             switch (Type)
             {
                 case ElementalType.Fire:
-                    Agent.SetHitPoints(Agent.Health - 5 * _stacks);
+                    Agent.Health = Agent.Health - 5 * _stacks;
                     // Check if in water/rain -> extinguish
                     var weather = Mission.Current.GetMissionBehavior<Behaviors.NordInvasionWeatherBehavior>();
                     if (weather != null && weather.CurrentWeather == 2) // rain
@@ -71,12 +71,12 @@ namespace NordInvasion.Components
                     break;
 
                 case ElementalType.Poison:
-                    Agent.SetHitPoints(Agent.Health - 3 * _stacks);
+                    Agent.Health = Agent.Health - 3 * _stacks;
                     // Needs medic with antidote
                     break;
 
                 case ElementalType.Bleed:
-                    Agent.SetHitPoints(Agent.Health - 2 * _stacks);
+                    Agent.Health = Agent.Health - 2 * _stacks;
                     _stacks = System.Math.Min(_stacks + 1, 5);
                     break;
 
@@ -88,7 +88,7 @@ namespace NordInvasion.Components
                     {
                         if (other != Agent && other.Team == Agent.Team && chained < 3)
                         {
-                            other.SetHitPoints(other.Health - 10);
+                            other.Health = other.Health - 10;
                             chained++;
                         }
                     }
@@ -96,7 +96,7 @@ namespace NordInvasion.Components
                     var weather2 = Mission.Current.GetMissionBehavior<Behaviors.NordInvasionWeatherBehavior>();
                     if (weather2 != null && weather2.CurrentWeather == 2)
                     {
-                        Agent.SetHitPoints(Agent.Health - 10); // extra
+                        Agent.Health = Agent.Health - 10; // extra
                     }
                     break;
             }
